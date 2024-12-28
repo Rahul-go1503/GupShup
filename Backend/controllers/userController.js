@@ -19,9 +19,10 @@ const createUser = async (req,res)=>{
         // Create new user
         const user = await User.create({ firstName, email, password});
         // Generate token
-        const token = generateToken(user._id);
+        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
+        res.cookie('jwt', accessToken, {htttponly : true, secure : true, maxAge : 7*24*60*60*1000})
         //console.log(token);
-        res.status(201).json({ message: 'User Created', token});
+        res.status(201).json({ message: 'User Created', user});
     } 
     catch (error) {
         // console.log(error)
@@ -29,18 +30,16 @@ const createUser = async (req,res)=>{
     }
 }
 
-
 // Update User
 const updateUser = async()=>{}
 
 // Delete User
 const deleteUser = async()=>{}
 
-
 // Get All Users
-const getUsers = async()=>{}
+const getAllUsers = async()=>{}
 
 // Get User By Id
 const getUserById = async()=>{}
 
-export {createUser,updateUser,deleteUser,getUsers,getUserById}
+export {createUser,updateUser,deleteUser,getAllUsers,getUserById}

@@ -1,13 +1,14 @@
 // Import Dependencies
-import express, { json } from 'express';
+import { json } from 'express'
 import {config} from 'dotenv'
-//import Users from './Schemas/Users';
-import connectToDatabase from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
-import {createServer} from 'node:http'
-import { Server } from 'socket.io';
-import reqLogger from './middlewares/reqlogger.js';
-import errLogger from './middlewares/errLogger.js';
+import connectToDatabase from './config/db.js'
+import authRoutes from './routes/authRoutes.js'
+import userRoutes from './routes/userRoutes.js'
+import messageRoutes from './routes/messageRoutes.js'
+import errLogger from './middlewares/errLogger.js'
+import reqLogger from './middlewares/reqLogger.js'
+import { app, server } from './config/socket.js'
+import cookieParser from 'cookie-parser'
 
 //Load Environment Variables
 config();
@@ -15,48 +16,21 @@ config();
 // Connect to the database
 connectToDatabase();
 
-// Initialize Express App
-const app = express();
-const server = createServer(app)
-const io = new Server(server,
-  {cors : {
-    origin : ['http://localhost:5173']
-  }
-  }
-);
-
 //Set Up Middleware
 app.use(json());
+app.use(cookieParser())
 app.use(reqLogger)
 app.use(errLogger)
 
 // Define Routes
 app.use('/api/auth',authRoutes)
+app.use('api/user', userRoutes)
+app.use('/api/messages', messageRoutes)
 
 
 // root route
 app.get('/', (req, res) => {
   res.send('GupShup Chat Application Server is running!');
-});
-
-
-// Socket.io connection
-io.on('connection', async (socket) => {
-  console.log(`Client with Socket Id : ${socket.id} connected`);
-  socket.on('sendMessage',(message)=>{
-    console.log(message)
-    io.emit('receiveMessage',message)
-  })
-  socket.on('disconnect',(reason)=>{
-    console.log(reason, `- Client with Socket Id : ${socket.id} Disconnected`)
-  })
-});
-
-io.engine.on("connection_error", (err) => {
-  console.log(err.req);      // the request object
-  console.log(err.code);     // the error code, for example 1
-  console.log(err.message);  // the error message, for example "Session ID unknown"
-  console.log(err.context);  // some additional error context
 });
 
 

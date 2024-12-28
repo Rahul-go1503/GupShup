@@ -21,14 +21,6 @@ const UserSchema = new Schema({
     lastName : {
         type : String
     },
-    createdAt : {
-        type : Date,
-        default : Date.now()
-    },
-    updatedAt : {
-        type : Date,
-        default : Date.now()
-    },
     isActive : {
         type : Boolean,
         default : true
@@ -43,9 +35,14 @@ const UserSchema = new Schema({
         type : Number
     },
     country : {
-        type : String
+        type : String,
+        default : 'India'
     }
-})
+},
+{
+    timestamps : true
+}
+)
 
 // Hash password before saving
 UserSchema.pre('save', async function(next) {
@@ -53,7 +50,7 @@ UserSchema.pre('save', async function(next) {
         try{
             const salt = await bcrypt.genSalt(10);
             // Store hash in your password DB.
-            this.password = await bcrypt.hash(this.password, salt);
+            this.password = bcrypt.hash(this.password, salt);
             //console.log(this.password);
         }
         catch(err){

@@ -1,19 +1,11 @@
-
 import {Router} from 'express'
-import { loginHandler, logoutHandler } from '../controllers/authController.js';
-import { createUser } from '../controllers/userController.js';
+import { loginHandler, logoutHandler } from '../controllers/authController.js'
+import validateJWT from '../middlewares/validateJWT.js'
 
 const route = Router()
 
-
-// signup
-route.post('/signup', createUser)
-
-//login
 route.post('/login', loginHandler)
+route.get('/logout',validateJWT,logoutHandler)
 
-//logout
-
-route.get('/logout',logoutHandler)
 
 export default route
