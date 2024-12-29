@@ -1,7 +1,8 @@
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 // Create User - sign up
-const createUser = async (req,res)=>{
+const createUser = async (req,res,next)=>{
     const {firstName,email, password} = req.body;
 
     if(!firstName || !email || !password){
@@ -19,14 +20,15 @@ const createUser = async (req,res)=>{
         // Create new user
         const user = await User.create({ firstName, email, password});
         // Generate token
+
+        // Todo: Refresh Token
         const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
         res.cookie('jwt', accessToken, {htttponly : true, secure : true, maxAge : 7*24*60*60*1000})
-        //console.log(token);
+        // console.log(accessToken);
         res.status(201).json({ message: 'User Created', user});
     } 
     catch (error) {
-        // console.log(error)
-        res.status(500).json({ message: 'Error creating user', error : error });
+        next(error)
     }
 }
 

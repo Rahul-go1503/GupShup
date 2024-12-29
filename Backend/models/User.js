@@ -50,8 +50,7 @@ UserSchema.pre('save', async function(next) {
         try{
             const salt = await bcrypt.genSalt(10);
             // Store hash in your password DB.
-            this.password = bcrypt.hash(this.password, salt);
-            //console.log(this.password);
+            this.password = await bcrypt.hash(this.password, salt); // Note: await has effect here bcrypt hash returns a promise
         }
         catch(err){
             next(err);

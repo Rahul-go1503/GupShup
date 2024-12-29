@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-const loginHandler = async (req,res)=>{
+const loginHandler = async (req,res,next)=>{
     const {email,password} = req.body;
 
     if(!email || !password){
@@ -25,14 +25,19 @@ const loginHandler = async (req,res)=>{
         res.cookie('jwt', accessToken, {htttponly : true, secure : true, maxAge : 7*24*60*60*1000})
         res.status(200).json({ message : `${user.userName} Login Successfully`, user});
     } 
-    catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: String(error.message) });
+    catch (err) {
+        next(err)
     }
 }
 
-const logoutHandler = async (req,res) => {
-    res.clearCookie('jwt');
-    res.status(200).json({message : "Logout Successfully"})
+const logoutHandler = async (req,res,next) => {
+    try{
+        res.clearCookie('jwt');
+        res.status(200).json({message : "Logout Successfully"})
+    }
+    catch(err){
+        next(err)
+    }
 }
 
 export {loginHandler, logoutHandler}
