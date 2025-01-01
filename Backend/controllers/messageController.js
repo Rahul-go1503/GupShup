@@ -1,4 +1,4 @@
-import Message from "../models/Message"
+import Message from "../models/Message.js"
 
 // get All messages for a user
 const getAllMessagesById = async(req, res) => {

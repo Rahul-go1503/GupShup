@@ -6,18 +6,19 @@ import Message from '../models/Message.js';
 
 const app = express();
 const server = createServer(app)
-const io = new Server(server,
-  {cors : {
-    origin : ['http://localhost:5173']
+const io = new Server(server, {
+  cors : {
+    origin : ['http://localhost:5173'],
+    credentials : true
   }
-  }
-)
+})
 
 const userSocketMap = new Map()
 
 // Socket.io connection
 io.on('connection', async (socket) => {
-  console.log(`Client with UserId : ${socket.userId} and Socket Id : ${socket.id} connected`)
+  const userId = socket.handshake.query.userId
+  console.log(`Client with UserId : ${userId} and Socket Id : ${socket.id} connected`)
   userSocketMap.set(socket.userId,socket.id)
 
 
@@ -43,6 +44,16 @@ io.on('connection', async (socket) => {
 
   socket.on('disconnect',(reason)=>{
     console.log(reason, `- Client with UserId : ${socket.userId} and Socket Id : ${socket.id} Disconnected`)
+    // Check: if we can do this
+    // userSocketMap.delete(socket.handshake.query.userId)
+
+    for(const [userId, socketId] of userSocketMap.entries()){
+      if(socketId === socket.id){
+        userSocketMap.delete(userId)
+        break
+      }
+    }
+
   })
 })
 

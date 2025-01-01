@@ -9,6 +9,7 @@ import reqLogger from './middlewares/reqLogger.js'
 import { app, server } from './config/socket.js'
 import cookieParser from 'cookie-parser'
 import errorHandler from './middlewares/errorHandler.js'
+import cors from 'cors'
 
 //Load Environment Variables
 config();
@@ -21,8 +22,13 @@ app.use(json());
 app.use(cookieParser())
 app.use(reqLogger)
 
+// Check: CORS 
+const corsOptions = {
+  origin : `${process.env.ORIGIN}`
+}
 // Define Routes
 app.use('/api/auth',authRoutes)
+app.use(cors(corsOptions))
 app.use('/api/user', userRoutes)
 app.use('/api/messages', messageRoutes)
 
@@ -35,7 +41,7 @@ app.get('/', (req, res) => {
 
 // 404 Route
 app.all('*', (req, res) => {
-  res.status(404).send('Resource not found');
+  res.status(404).json({message : 'Resource not found'});
 });
 
 app.use(errorHandler)

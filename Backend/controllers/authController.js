@@ -22,8 +22,13 @@ const loginHandler = async (req,res,next)=>{
         // Generate token
         const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
         // const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-        res.cookie('jwt', accessToken, {htttponly : true, secure : true, maxAge : 7*24*60*60*1000})
-        res.status(200).json({ message : `${user.userName} Login Successfully`, user});
+        res.cookie('jwt', accessToken, {
+            htttponly : true,
+            secure : process.env.NODE_ENV !== 'development',
+            maxAge : 7*24*60*60*1000,
+            sameSite : 'strict'
+        })
+        res.status(200).json({ message : `${user.firstName} Login Successfully`, user});
     } 
     catch (err) {
         next(err)
