@@ -4,16 +4,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../contexts/AuthContext';
 import socket from '../socket';
-import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { LOGIN_URL } from '@/utils/constants';
+import { useAppStore } from '@/store';
+import { toast } from 'sonner';
 
 const Login = () => {
 
   const navigate = useNavigate();
-  const {toast} = useToast()
-  const {auth, setAuth} = useContext(AuthContext);
+  // const {auth, setAuth} = useContext(AuthContext);
+  const {setUserInfo} =  useAppStore()
   const [inputs, setInputs] = useState({email : "", password : ""});
 
   const handleChange = (event) => {
@@ -31,24 +32,19 @@ const Login = () => {
     // return;
     try {
       const response = await axios.post(LOGIN_URL, inputs);
-      setAuth({user : inputs.email, pwd : inputs.password, token: response.data.token})
+      // setAuth({user : inputs.email, pwd : inputs.password, token: response.data.token})
       // localStorage.setItem('auth', 1)
-      setAuth(response.data.user)
+      // setAuth(response.data.user)
+      setUserInfo(response.data.user)
 
       //Check: userId is not binded
       socket.userId = response.data.user._id
       socket.connect()
       navigate('/chat')
-      toast({
-        variant: "destructive",
-        description: 'User Login successfully!'
-      });
+      toast.success('User Login successfully!')
     } catch (error) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: error.response.data.message
-      });
+      toast.error(error.message)
       // alert(error.response.data.message);
     }
   }

@@ -1,6 +1,16 @@
 import { io } from "socket.io-client";
+import { HOST } from "./utils/constants";
+import {useAppStore} from './store'
 
-const socket = io(import.meta.env.VITE_SERVER_URL, {autoConnect : false}); 
+// const userInfo = useAppStore((state)=>state.userInfo)
+const socket = io(HOST, {
+  autoConnect : false,
+  // query : {
+  //   userId : userInfo?.userId
+  // },
+  withCredentials: true
+}); 
+
 
 socket.onAny((event, ...args) => {
   console.log(event, args);

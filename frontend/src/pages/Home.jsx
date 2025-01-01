@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const Home = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   // useEffect(() =>{
   //   const isLoggedIn = localStorage.getItem('auth');
   //   if(isLoggedIn){
@@ -10,18 +10,23 @@ const Home = () => {
   //   }
   // },[])
   return (
-    <div className='flex flex-col h-screen'>
-      <nav className='flex justify-end bg-gray-700 p-2'>
-        <div className='mx-2 text-white font-semibold'>
-          <Link to = '/login'>Login</Link>
+    <div className="flex h-screen flex-col">
+      <nav className="flex justify-end p-2">
+        <div className="mx-2 font-semibold">
+          <Link to="/login">Login</Link>
         </div>
-        <div className='mx-2 text-white font-semibold'>
-          <Link to  = '/signup'>Sign Up</Link>
+        <div className="mx-2 font-semibold text-primary">
+          <Link to="/signup">Sign Up</Link>
         </div>
       </nav>
-      <main className='flex flex-1 flex-col items-center justify-center'>
-        <p className='font-bold text-5xl my-4 text-gray-700'>Aa Gye GupShup karne 😁</p>
-        <p className='text-indigo-500 font-bold text-xl'>Meet your freinds and chat with them</p>
+      <main className="flex flex-1 flex-col items-center justify-center">
+        <p className="my-4 text-5xl font-bold">
+          <span className="text-primary">GupShup</span> Bringing People Closer,
+          {/* One Message at a Time. */}
+        </p>
+        <p className="text-xl">
+          Seamless, secure, and smart – your ultimate chat companion
+        </p>
       </main>
     </div>
   )
