@@ -1,31 +1,24 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { useToast } from '@/hooks/use-toast'
-import { SIGNUP_URL } from '@/utils/constants'
 import { axiosInstance } from '@/config/axios'
 import { toast } from 'sonner'
+import { Eye, EyeClosed } from 'lucide-react'
+import { SIGNUP_ROUTE } from '@/utils/constants'
 
 const SignUp = () => {
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [inputs, setInputs] = useState({
     firstName: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
-  const [error, setError] = useState('')
-
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error)
-    }
-  }, [error])
-
   const handleChange = (event) => {
-    setError('')
     const name = event.target.name
     const value = event.target.value
     setInputs((values) => ({ ...values, [name]: value }))
@@ -33,30 +26,28 @@ const SignUp = () => {
 
   const validateInputs = () => {
     let { firstName, email, password, confirmPassword } = inputs
-    if (firstName === '' || email === '' || password === '') {
-      setError('All Fields are required')
-      return false
-    }
-    firstName = firstName.trim()
-    email = email.trim()
-    password = password.trim()
-    if (firstName === '') {
-      setError('Fields Can not be left blank')
+    if (
+      firstName.trim() === '' ||
+      email.trim() === '' ||
+      password.trim() === ''
+    ) {
+      toast.error('All Fields are required')
       return false
     }
     const emailRegEx = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Email validation regex
 
     if (!emailRegEx.test(email)) {
-      setError('Invalid email address')
+      toast.error('Invalid email address')
       return false
     }
     // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     // if (!passwordRegex.test(password)){
-    //     setError('Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.')
+    //     toast.error('Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.')
     //     return false
     // }
     if (password !== confirmPassword) {
-      setError("Password didn't match")
+      toast.error("Passwords don't match")
+      return false
     }
     return true
   }
@@ -68,13 +59,13 @@ const SignUp = () => {
     }
     try {
       // Check: with crediential
-      const response = await axiosInstance.post(SIGNUP_URL, inputs)
+      await axiosInstance.post(SIGNUP_ROUTE, inputs)
       navigate('/login')
       toast.success('User registered successfully!')
     } catch (error) {
-      const { status, statusText, data } = error.response
-      console.error(`${status} - ${statusText} : ${data.message}`)
-      toast.error(data.message)
+      // const { status, statusText, data } = error.response
+      // console.error(`${status} - ${statusText} : ${data.message}`)
+      toast.error(error.response.data.message)
     }
   }
 
@@ -97,7 +88,7 @@ const SignUp = () => {
               name="firstName"
               value={inputs.firstName}
               onChange={handleChange}
-              autocomplete="off"
+              autoComplete="off"
             />
           </div>
           <div>
@@ -111,48 +102,77 @@ const SignUp = () => {
               name="email"
               value={inputs.email}
               onChange={handleChange}
-              autocomplete="off"
+              autoComplete="off"
             />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium">
               Password
             </label>
-            <Input
-              type="password"
-              placeholder="Create a password"
-              id="password"
-              name="password"
-              value={inputs.password}
-              onChange={handleChange}
-              autocomplete="off"
-            />
+            <div className="relative mt-1">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Create a password"
+                id="password"
+                name="password"
+                value={inputs.password}
+                onChange={handleChange}
+                autoComplete="off"
+              />
+              <div
+                className="absolute inset-y-0 right-3 flex cursor-pointer items-center"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <Eye className="h-5 w-5" />
+                ) : (
+                  <EyeClosed className="h-5 w-5" />
+                )}
+              </div>
+            </div>
           </div>
           <div>
             <label
               htmlFor="confirmPassword"
               className="block text-sm font-medium"
             >
-              Password
+              Confirm Password
             </label>
-            <Input
-              type="password"
-              placeholder="Re-enter your password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={inputs.password}
-              onChange={handleChange}
-              autocomplete="off"
-            />
+            <div className="relative mt-1">
+              <Input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Re-enter your password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={inputs.confirmPassword}
+                onChange={handleChange}
+                autoComplete="off"
+              />
+              <div
+                className="absolute inset-y-0 right-3 flex cursor-pointer items-center"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? (
+                  <Eye className="h-5 w-5" />
+                ) : (
+                  <EyeClosed className="h-5 w-5" />
+                )}
+              </div>
+            </div>
           </div>
-          <Button type="submit" className="w-full text-white">
+          <Button type="submit" className="mx-auto">
             Sign Up
           </Button>
         </form>
-        <p className="mt-8">Already have an account?</p>
-        <Button asChild className="w-1/2 bg-accent text-white">
-          <Link to="/login">Login</Link>
-        </Button>
+        <p className="mt-6 text-center text-sm">
+          Already have an account?{' '}
+          <Link
+            to="/login"
+            className="font-medium text-primary hover:underline"
+          >
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   )
