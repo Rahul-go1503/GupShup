@@ -4,6 +4,8 @@ import tailwindcss from "tailwindcss";
 import path from "path"
 
 // https://vite.dev/config/
+
+// Todo: Check proxy here and setup env variables
 export default defineConfig({
   server: {
     proxy: {

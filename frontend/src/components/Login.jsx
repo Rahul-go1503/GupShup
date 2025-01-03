@@ -1,16 +1,12 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import socket from '../socket'
+import { Link } from 'react-router-dom'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useAppStore } from '@/store'
 import { toast } from 'sonner'
-import { axiosInstance } from '@/config/axios'
-import { LOGIN_ROUTE } from '@/utils/constants'
 
 const Login = () => {
-  const navigate = useNavigate()
-  const { setUserInfo } = useAppStore()
+  const { login } = useAppStore()
   const [inputs, setInputs] = useState({ email: '', password: '' })
 
   const handleChange = (event) => {
@@ -43,19 +39,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateLogin()) return
-    try {
-      const response = await axiosInstance.post(LOGIN_ROUTE, inputs)
-      setUserInfo(response.data.user)
-
-      //Check: userId is not binded
-      socket.userId = response.data.user._id
-      socket.connect()
-      navigate('/chat')
-      toast.success('User Login successfully!')
-    } catch (error) {
-      console.error(error)
-      toast.error(error.message)
-    }
+    login(inputs)
   }
 
   return (
@@ -74,7 +58,7 @@ const Login = () => {
               name="email"
               value={inputs.email}
               onChange={handleChange}
-              autoComplete="off"
+              // autoComplete="off"
             />
           </div>
           <div>
@@ -88,7 +72,7 @@ const Login = () => {
               name="password"
               value={inputs.password}
               onChange={handleChange}
-              autoComplete="off"
+              // autoComplete="off"
             />
           </div>
           <Button className="mx-auto" type="submit">

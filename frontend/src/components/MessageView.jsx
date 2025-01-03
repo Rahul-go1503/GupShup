@@ -1,12 +1,19 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ChatInfo from './ChatInfo'
 import ChatWindow from './ChatWindow'
 import ChatInputBar from './ChatInputBar'
+import { useAppStore } from '@/store'
 
 const MessageView = () => {
-  return (
-    <div className="col-span-9 row-span-11 grid grid-cols-1 grid-rows-12 flex-col">
-      <ChatInfo className="row-span-1" />
+  const { isChatsLoading, selectedUserData, getAllMessagesById } = useAppStore()
+  useEffect(() => {
+    getAllMessagesById(selectedUserData._id)
+  }, [selectedUserData, getAllMessagesById])
+  return isChatsLoading ? (
+    <p>loading....</p>
+  ) : (
+    <div className="col-span-9 row-span-11 grid grid-cols-1 grid-rows-12">
+      <ChatInfo />
       <ChatWindow />
       <ChatInputBar />
     </div>

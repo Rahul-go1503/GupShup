@@ -1,11 +1,7 @@
 import { MessageSquarePlus, Search } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
-import { Input } from './ui/input'
+import React, { useEffect } from 'react'
 import ContactCard from './contactCard'
 import { ScrollArea } from './ui/scroll-area'
-import { axiosInstance } from '@/config/axios'
-import { ALL_USER_ROUTE } from '@/utils/constants'
-import { toast } from 'sonner'
 import { useAppStore } from '@/store'
 
 const Contacts = () => {
@@ -24,7 +20,7 @@ const Contacts = () => {
           <MessageSquarePlus />
         </div>
       </div>
-      <div className="m-2 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+      <div className="row-span-1 m-2 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
         <div className="text-muted self-auto">
           <Search size={20} />
         </div>
@@ -34,8 +30,8 @@ const Contacts = () => {
           className="me-2 w-full rounded bg-transparent outline-none"
         />
       </div>
-      <div>
-        <ScrollArea>
+      <div className="row-span-10">
+        <ScrollArea className="h-full">
           {users.map((contact, index) => (
             <ContactCard key={index} user={contact} />
           ))}

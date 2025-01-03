@@ -4,6 +4,6 @@ import validateJWT from "../middlewares/validateJWT.js"
 
 const route = Router()
 
-route.post('/',validateJWT,getAllMessagesById)
+route.post('/all', validateJWT, getAllMessagesById)
 
 export default route

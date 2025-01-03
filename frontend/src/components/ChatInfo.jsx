@@ -4,7 +4,7 @@ import React from 'react'
 const ChatInfo = () => {
   const { selectedUserData } = useAppStore()
   return (
-    <div>
+    <div className="row-span-1">
       ChatInfo - {selectedUserData ? selectedUserData.firstName : 'User'}
     </div>
   )

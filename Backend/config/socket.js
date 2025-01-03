@@ -37,7 +37,8 @@ io.on('connection', async (socket) => {
     })
     try {
       await newMessage.save()
-      socket.to(receiverId).emit('receiveMessage', message)
+      socket.emit('receiveMessage', newMessage)
+      if (receiverId) socket.to(receiverId).emit('receiveMessage', newMessage)
       // i.to(receiverId).emit('receiveMessage', message)
     }
     catch (error) {

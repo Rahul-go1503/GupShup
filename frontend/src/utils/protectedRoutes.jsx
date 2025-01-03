@@ -3,15 +3,19 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAppStore } from '@/store'
 
 const AuthRoutes = () => {
-    const {userInfo} = useAppStore()
-    const location = useLocation()
-  return userInfo? <Navigate to = '/chat' state={{from: location.pathname}} replace/> : <Outlet />
+  const { userInfo } = useAppStore()
+  const location = useLocation()
+  if (userInfo)
+    return <Navigate to="/chat" state={{ from: location.pathname }} replace />
+  return <Outlet />
 }
 
 const PrivateRoutes = () => {
-  const {userInfo} = useAppStore()
+  const { userInfo } = useAppStore()
+  // console.log(userInfo)
   const location = useLocation()
-return userInfo? <Outlet /> : <Navigate to = '/' state={{from: location.pathname}} replace/>
+  if (userInfo) return <Outlet />
+  return <Navigate to="/" state={{ from: location.pathname }} replace />
 }
 
-export {AuthRoutes, PrivateRoutes}
+export { AuthRoutes, PrivateRoutes }
