@@ -1,6 +1,6 @@
 // Import Dependencies
 import { json } from 'express'
-import {config} from 'dotenv'
+import { config } from 'dotenv'
 import connectToDatabase from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -22,13 +22,15 @@ app.use(json());
 app.use(cookieParser())
 app.use(reqLogger)
 
-// Check: CORS 
+// Check: CORS and credientials
 const corsOptions = {
-  origin : `${process.env.ORIGIN}`
+  // origin : `${process.env.ORIGIN}`
+  origin: 'http://localhost:5173',
+  credentials: true, // Allow cookies and credentials
 }
-// Define Routes
-app.use('/api/auth',authRoutes)
 app.use(cors(corsOptions))
+// Define Routes
+app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/messages', messageRoutes)
 
@@ -41,7 +43,7 @@ app.get('/', (req, res) => {
 
 // 404 Route
 app.all('*', (req, res) => {
-  res.status(404).json({message : 'Resource not found'});
+  res.status(404).json({ message: 'Resource not found' });
 });
 
 app.use(errorHandler)

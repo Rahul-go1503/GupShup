@@ -1,5 +1,5 @@
 import express from 'express'
-import {createServer} from 'node:http'
+import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import Message from '../models/Message.js';
 // Initialize Express App
@@ -7,9 +7,9 @@ import Message from '../models/Message.js';
 const app = express();
 const server = createServer(app)
 const io = new Server(server, {
-  cors : {
-    origin : ['http://localhost:5173'],
-    credentials : true
+  cors: {
+    origin: 'http://localhost:5173',
+    credentials: true
   }
 })
 
@@ -19,36 +19,40 @@ const userSocketMap = new Map()
 io.on('connection', async (socket) => {
   const userId = socket.handshake.query.userId
   console.log(`Client with UserId : ${userId} and Socket Id : ${socket.id} connected`)
-  userSocketMap.set(socket.userId,socket.id)
+  userSocketMap.set(userId, socket.id)
+  console.log(userSocketMap)
+  // io.emit()
 
-
-  socket.on('sendMessage', async (to, message)=>{
-    console.log(message)
-    const senderId = socket.userId
+  socket.on('sendMessage', async (data) => {
+    const { message, to } = data
+    // console.log(message)
+    const senderId = socket.handshake.query.userId
     const receiverId = userSocketMap.get(to)
 
+    console.log(senderId, receiverId);
     const newMessage = new Message({
       senderId,
-      receiverId,
-      message : message
+      receiverId: to,
+      message: message
     })
-    try{
+    try {
       await newMessage.save()
-      socket.to(receiverId).emit('receiveMessage',message)
+      socket.to(receiverId).emit('receiveMessage', message)
+      // i.to(receiverId).emit('receiveMessage', message)
     }
-    catch(error){
+    catch (error) {
       console.log(error)
       // :TODO Handle Error
     }
   })
 
-  socket.on('disconnect',(reason)=>{
+  socket.on('disconnect', (reason) => {
     console.log(reason, `- Client with UserId : ${socket.userId} and Socket Id : ${socket.id} Disconnected`)
     // Check: if we can do this
     // userSocketMap.delete(socket.handshake.query.userId)
 
-    for(const [userId, socketId] of userSocketMap.entries()){
-      if(socketId === socket.id){
+    for (const [userId, socketId] of userSocketMap.entries()) {
+      if (socketId === socket.id) {
         userSocketMap.delete(userId)
         break
       }
@@ -64,4 +68,4 @@ io.engine.on("connection_error", (err) => {
   console.log(err.context);  // some additional error context
 })
 
-export {app,io,server}
+export { app, io, server }
