@@ -2,19 +2,34 @@ import React from 'react'
 import Message from './Message'
 import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
+import moment from 'moment'
 
 const ChatWindow = () => {
   const { selectedChatMessages } = useAppStore()
   // const {message, createdAt, fromSelf} = selectedChatMessages
+  const renderMessages = () => {
+    let lastDate = null
+    return selectedChatMessages.map((data, index) => {
+      const msgDate = moment(data.createdAt).format('YYYY-MM-DD')
+      const showDate = msgDate !== lastDate
+      lastDate = msgDate
+      return (
+        <div key={index}>
+          {showDate && (
+            <div className="text-center">
+              {moment(data.createdAt).format('LL')}
+            </div>
+          )}
+          <Message data={data} />
+        </div>
+      )
+    })
+  }
   return (
     <>
       {/* console.log(data) */}
-      <div className="row-span-10 bg-primary/5">
-        <ScrollArea className="h-full">
-          {selectedChatMessages.map((data, index) => (
-            <Message key={index} data={data} />
-          ))}
-        </ScrollArea>
+      <div className="row-span-8 bg-primary/5">
+        <ScrollArea className="h-full">{renderMessages()}</ScrollArea>
       </div>
     </>
   )

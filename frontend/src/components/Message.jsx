@@ -1,20 +1,33 @@
 import { useAppStore } from '@/store'
-import React from 'react'
+import { formatMessageTime } from '@/utils/formatMessageTime.js'
+import React, { useEffect, useRef } from 'react'
 
 const Message = ({ data }) => {
   const { message, senderId, createdAt } = data
-  const { userInfo } = useAppStore()
+  const { userInfo, selectedUserData } = useAppStore()
   //   console.log(userInfo, selectedUserData)
+  const messageEndRef = useRef(null)
+  useEffect(() => {
+    if (messageEndRef.current && message) {
+      messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [message])
   return (
-    <div className={`m-2 ms-auto w-fit max-w-60 rounded-lg bg-primary/10 p-2`}>
-      <p>{message}</p>
-      <p>{createdAt}</p>
-      <p>{senderId == userInfo._id ? 'true' : 'false'}</p>
-      {/* <p>
-        {from === userinfo.userId
-          ? userinfo.firstname
-          : selectedUserData.firstname}
-      </p> */}
+    <div
+      className={`chat ${senderId != userInfo._id ? 'chat-start' : 'chat-end'}`}
+      ref={messageEndRef}
+    >
+      <div className="chat-header">
+        {senderId == userInfo._id ? 'You' : selectedUserData.firstName}
+      </div>
+      <div className="chat-bubble chat-bubble-primary max-w-96 whitespace-pre-wrap">
+        {message}
+      </div>
+      <div className="chat-footer opacity-50">
+        <time className="text-xs opacity-50" dateTime={createdAt}>
+          {formatMessageTime(createdAt)}
+        </time>
+      </div>
     </div>
   )
 }

@@ -24,7 +24,7 @@ const connectSocket = (userId) => {
     // const { message, to } = data
     // console.log(data)
     const { selectedUserData, addMessage } = useAppStore.getState()
-    if (selectedUserData._id !== data.receiverId) return
+    if (selectedUserData._id != data.receiverId && selectedUserData._id != data.senderId) return
     addMessage(data)
   })
   socket.on("disconnect", (reason) => {

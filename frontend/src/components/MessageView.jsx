@@ -12,7 +12,7 @@ const MessageView = () => {
   return isChatsLoading ? (
     <p>loading....</p>
   ) : (
-    <div className="col-span-9 row-span-11 grid grid-cols-1 grid-rows-12">
+    <div className="col-span-9 row-span-11 grid grid-cols-1 grid-rows-10">
       <ChatInfo />
       <ChatWindow />
       <ChatInputBar />
