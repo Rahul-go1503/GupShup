@@ -26,6 +26,8 @@ const loginHandler = async (req, res, next) => {
             return res.status(401).json({ message: "Invalid Credentials" })
         }
         // Generate token
+
+        // Todo: change id to _id in payload
         const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
         // const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
         res.cookie('jwt', accessToken, cookieOptions)

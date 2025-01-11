@@ -4,6 +4,7 @@ import { config } from 'dotenv'
 import connectToDatabase from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import groupRoutes from './routes/groupRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import reqLogger from './middlewares/reqLogger.js'
 import { app, server } from './config/socket.js'
@@ -33,6 +34,7 @@ app.use(cors(corsOptions))
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/messages', messageRoutes)
+app.use('/api/group', groupRoutes)
 
 
 // root route
@@ -62,4 +64,5 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error("Unhandled Rejection:", reason);
+  process.exit(1)
 });

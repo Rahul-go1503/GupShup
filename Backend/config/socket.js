@@ -2,6 +2,8 @@ import express from 'express'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import Message from '../models/Message.js';
+import Group from '../models/Group.js';
+import { strToObjId } from '../utils/strToObjId.js';
 // Initialize Express App
 
 const app = express();
@@ -24,22 +26,46 @@ io.on('connection', async (socket) => {
   // io.emit()
 
   socket.on('sendMessage', async (data) => {
-    const { message, to } = data
-    // console.log(message)
-    const senderId = socket.handshake.query.userId
-    const receiverId = userSocketMap.get(to)
-
-    console.log(senderId, receiverId);
-    const newMessage = new Message({
-      senderId,
-      receiverId: to,
-      message: message
-    })
     try {
+      const { message, to } = data
+      // console.log(message)
+      const senderId = socket.handshake.query.userId
+      const receiverId = userSocketMap.get(to)
+
+      console.log(senderId, receiverId);
+      const newMessage = new Message({
+        senderId,
+        receiverId: to,
+        message: message
+      })
       await newMessage.save()
       socket.emit('receiveMessage', newMessage)
       if (receiverId) socket.to(receiverId).emit('receiveMessage', newMessage)
       // i.to(receiverId).emit('receiveMessage', message)
+    }
+    catch (error) {
+      console.log(error)
+      // :TODO Handle Error
+    }
+  })
+
+  socket.on('sendGroupMessage', async (data) => {
+    try {
+      const { message, groupId } = data
+      // console.log(message)
+      const senderId = socket.handshake.query.userId
+      const newMessage = new Message({
+        senderId,
+        groupId,
+        message
+      })
+      await newMessage.save()
+      // socket.emit('receiveGroupMessage', newMessage)
+      const members = await Group.findById(strToObjId(groupId)).select('members')
+      for (const member in members) {
+        const receiverId = userSocketMap.get(member.userId)
+        if (receiverId) socket.to(receiverId).emit('receiveGroupMessage', newMessage)
+      }
     }
     catch (error) {
       console.log(error)
