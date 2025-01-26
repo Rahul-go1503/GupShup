@@ -16,25 +16,27 @@ import { useAppStore } from './store'
 
 function App() {
   // Todo: fetch userInfo on Refresh/ Rerender
-  const { isCheckingAuth, checkAuth } = useAppStore()
+  const { isCheckingAuth, checkAuth, theme } = useAppStore()
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
 
   if (isCheckingAuth) return <p>loading...</p>
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route element={<AuthRoutes />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Route>
-        <Route element={<PrivateRoutes />}>
-          <Route path="/chat" element={<Chat />} />
-        </Route>
-      </Routes>
-    </Router>
+    <div data-theme={theme}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route element={<AuthRoutes />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Route>
+          <Route element={<PrivateRoutes />}>
+            <Route path="/chat" element={<Chat />} />
+          </Route>
+        </Routes>
+      </Router>
+    </div>
   )
 }
 

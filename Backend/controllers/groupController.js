@@ -1,10 +1,10 @@
 import User from '../models/User.js'
-import Group from '../models/Group.js'
 import { strToObjId } from '../utils/strToObjId.js'
-
+import Contact from '../models/Contact.js'
 const createNewGroup = async (req, res, next) => {
     try {
         const { groupName, description, members } = req.body
+        // console.log(req.body)
         const Admin = req.user.id
         const groupMembers = []
         groupMembers.push({ userId: Admin, isAdmin: true })
@@ -18,13 +18,14 @@ const createNewGroup = async (req, res, next) => {
             }
             groupMembers.push({ userId })
         }
-        const newGrpup = new Group({
-            groupName,
+        const newGroup = new Contact({
+            name: groupName,
             description,
-            members: groupMembers
+            members: groupMembers,
+            isGroup: true
         })
-        await newGrpup.save()
-        return res.status(201).json(newGrpup)
+        await newGroup.save()
+        return res.status(201).json({ group: { ...newGroup, latestMessageAt: newGroup.createdAt } })
     }
     catch (err) {
         next(err)

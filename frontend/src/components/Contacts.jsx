@@ -1,62 +1,67 @@
 import { MessageSquarePlus, Search } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ContactCard from './contactCard'
 import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
+import CreateGroup from './createGroup'
+import NewChat from './NewChat'
+import { updateUnReadMessageCount } from '@/events/chatEvents'
 
 const Contacts = () => {
-  const { isUserLoading, users, getAllUsers } = useAppStore()
+  const { isUserLoading, users, getAllContacts, selectedUserData } =
+    useAppStore()
   useEffect(() => {
-    getAllUsers()
+    getAllContacts()
   }, [])
+  useEffect(() => {
+    if (selectedUserData?.unReadMessageCount) {
+      const data = {
+        contactId: selectedUserData?._id,
+        count: -selectedUserData?.unReadMessageCount,
+      }
+      updateUnReadMessageCount(data)
+    }
+  }, [selectedUserData])
 
+  const [query, setQuery] = useState('')
+
+  const filteredContacts = useMemo(() => {
+    return users.filter((contact) => {
+      // console.log(contact.name, query)
+      return contact.name.toLowerCase().includes(query.toLowerCase())
+    })
+  }, [users, query])
   return isUserLoading ? (
     'loading...'
   ) : (
-    <>
-      <div className="col-span-3 row-span-11 grid grid-cols-1 grid-rows-12 border-r-2 border-r-neutral">
-        <div className="row-span-1 m-2 flex items-center justify-between p-2">
-          <p className="font-bold">Chats</p>
-          <div
-            className="my-2 hover:cursor-pointer"
-            onClick={() => document.getElementById('new_chat').showModal()}
-          >
-            <MessageSquarePlus />
-          </div>
-        </div>
-        <div className="row-span-1 m-2 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-          <div className="text-muted self-auto">
-            <Search size={20} />
-          </div>
-          <input
-            type="text"
-            placeholder="Search or start a new chat"
-            className="me-2 w-full rounded bg-transparent outline-none"
-          />
-        </div>
-        <div className="row-span-10">
-          <ScrollArea className="h-full">
-            {users.map((contact, index) => (
-              <ContactCard key={index} user={contact} />
-            ))}
-          </ScrollArea>
-        </div>
+    <div className="col-span-3 row-span-11 grid grid-cols-1 grid-rows-12 border-r-2 border-r-neutral px-2">
+      <div className="row-span-1 m-2 flex items-center justify-between">
+        <p className="font-bold">Chats</p>
+        <NewChat />
+        <CreateGroup />
       </div>
-      <dialog id="new_chat" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box">
-          <h3 className="text-lg font-bold">Hello!</h3>
-          <p className="py-4">
-            Press ESC key or click the button below to close
-          </p>
-          <div className="modal-action">
-            <form method="dialog">
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn">Close</button>
-            </form>
-          </div>
+      <div className="row-span-1 m-2 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+        <div className="text-muted self-auto">
+          <Search size={20} />
         </div>
-      </dialog>
-    </>
+        <input
+          type="text"
+          placeholder="Search or start a new chat"
+          className="me-2 w-full rounded bg-transparent outline-none"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+          }}
+        />
+      </div>
+      <div className="row-span-10">
+        <ScrollArea className="h-full">
+          {filteredContacts.map((contact, index) => (
+            <ContactCard key={index} user={contact} />
+          ))}
+        </ScrollArea>
+      </div>
+    </div>
   )
 }
 

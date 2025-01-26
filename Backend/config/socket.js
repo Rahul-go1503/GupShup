@@ -1,9 +1,7 @@
 import express from 'express'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
-import Message from '../models/Message.js';
-import Group from '../models/Group.js';
-import { strToObjId } from '../utils/strToObjId.js';
+import { registerSocketHandlers } from '../controllers/socketController/registerSocketHandlers.js';
 // Initialize Express App
 
 const app = express();
@@ -19,80 +17,36 @@ const userSocketMap = new Map()
 
 // Socket.io connection
 io.on('connection', async (socket) => {
-  const userId = socket.handshake.query.userId
-  console.log(`Client with UserId : ${userId} and Socket Id : ${socket.id} connected`)
+  console.log('connecting to socket...')
+  const { _id: userId, firstName: userName } = socket.handshake.auth
+  // const userName = socket.handshake.query.userNamed
+  // join room to handle multi tab and multi device communication
+  socket.join(userId)
+  console.log(`Client(${userName}) with UserId : ${userId} and Socket Id : ${socket.id} connected`)
   userSocketMap.set(userId, socket.id)
   console.log(userSocketMap)
-  // io.emit()
 
-  socket.on('sendMessage', async (data) => {
-    try {
-      const { message, to } = data
-      // console.log(message)
-      const senderId = socket.handshake.query.userId
-      const receiverId = userSocketMap.get(to)
-
-      console.log(senderId, receiverId);
-      const newMessage = new Message({
-        senderId,
-        receiverId: to,
-        message: message
-      })
-      await newMessage.save()
-      socket.emit('receiveMessage', newMessage)
-      if (receiverId) socket.to(receiverId).emit('receiveMessage', newMessage)
-      // i.to(receiverId).emit('receiveMessage', message)
-    }
-    catch (error) {
-      console.log(error)
-      // :TODO Handle Error
-    }
-  })
-
-  socket.on('sendGroupMessage', async (data) => {
-    try {
-      const { message, groupId } = data
-      // console.log(message)
-      const senderId = socket.handshake.query.userId
-      const newMessage = new Message({
-        senderId,
-        groupId,
-        message
-      })
-      await newMessage.save()
-      // socket.emit('receiveGroupMessage', newMessage)
-      const members = await Group.findById(strToObjId(groupId)).select('members')
-      for (const member in members) {
-        const receiverId = userSocketMap.get(member.userId)
-        if (receiverId) socket.to(receiverId).emit('receiveGroupMessage', newMessage)
-      }
-    }
-    catch (error) {
-      console.log(error)
-      // :TODO Handle Error
-    }
-  })
-
+  registerSocketHandlers(io, socket)
   socket.on('disconnect', (reason) => {
-    console.log(reason, `- Client with UserId : ${socket.userId} and Socket Id : ${socket.id} Disconnected`)
+    console.log(reason, `- Client(${userName}) with UserId : ${userId} and Socket Id : ${socket.id} Disconnected`)
     // Check: if we can do this
-    // userSocketMap.delete(socket.handshake.query.userId)
-
+    // userSocketMap.delete()
+    socket.leave(userId)
     for (const [userId, socketId] of userSocketMap.entries()) {
       if (socketId === socket.id) {
         userSocketMap.delete(userId)
         break
       }
     }
-
+    console.log(userSocketMap)
   })
 })
 
 io.engine.on("connection_error", (err) => {
-  console.log(err.req);      // the request object
-  console.log(err.code);     // the error code, for example 1
+  // console.log(err.req);      // the request object
+  // console.log(err.code);     // the error code, for example 1
   console.log(err.message);  // the error message, for example "Session ID unknown"
-  console.log(err.context);  // some additional error context
+  // console.log(err.context);  // some additional error context
 })
 
-export { app, io, server }
+export { app, io, server, userSocketMap }

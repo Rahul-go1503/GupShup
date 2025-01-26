@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import Message from "../models/Message.js";
-import mongoose from "mongoose";
+import { strToObjId } from "../utils/strToObjId.js";
+import Contact from "../models/Contact.js";
+import { userSocketMap } from "../config/socket.js";
 
 // Create User - sign up
 const createUser = async (req, res, next) => {
@@ -65,62 +65,164 @@ const deleteUser = async (req, res, next) => {
 // Get All Contacts
 const getAllContacts = async (req, res, next) => {
     try {
-        const userId = mongoose.Types.ObjectId.createFromHexString(req.user.id)
-        const contacts = await Message.aggregate([
+        const userId = strToObjId(req.user.id)
+        const contacts = await Contact.aggregate([
             {
                 $match: {
-                    $or: [
-                        { senderId: userId },
-                        { receiverId: userId }
-                    ]
+                    'members.userId': userId
                 }
             },
+
             {
-                $sort: { updatedAt: -1 }
-            },
-            {
-                $group: {
-                    _id: {
+                $project: {
+                    _id: 1,
+                    isGroup: 1,
+                    name: 1,
+                    profile: 1,
+                    latestMessageId: 1,
+                    members: {
                         $cond: {
-                            if: { $eq: ['$senderId', userId] },
-                            then: '$receiverId',
-                            else: '$senderId'
+                            if: { $eq: ['$isGroup', false] },
+                            then: '$members',
+                            else: {
+                                $filter: {
+                                    input: '$members',
+                                    as: 'user',
+                                    cond: { $eq: ['$$user.userId', userId] }
+                                }
+                            }
                         }
-                    },
-                    lastMessageTime: { $first: '$updatedAt' }
+                    }
+
                 }
             },
             {
                 $lookup: {
                     from: 'users',
-                    localField: '_id',
+                    localField: 'members.userId',
                     foreignField: '_id',
-                    as: 'contactInfo'
+                    as: 'users'
                 }
             },
             {
-                $unwind: '$contactInfo'
-            },
-            {
-                $project: {
-                    _id: 1,
-                    lastMessageTime: 1,
-                    firstName: '$contactInfo.firstName',
-                    lastName: '$contactInfo.lastName',
-                    email: '$contactInfo.email',
+                $lookup: {
+                    from: 'messages',
+                    localField: 'latestMessageId',
+                    foreignField: '_id',
+                    as: 'latestMessage'
                 }
             },
             {
-                $sort: { lastMessageTime: -1 }
+                $lookup: {
+                    from: 'users',
+                    localField: 'latestMessage.senderId',
+                    foreignField: '_id',
+                    as: 'latestMessageSender'
+                }
             }
-
         ])
-        res.status(200).json(contacts)
+        // return res.send(contacts)
+        let data = []
+
+        for (const contact of contacts) {
+            // todo: replace _id to contact id
+            if (contact.isGroup) {
+                data.push({
+                    _id: contact._id,
+                    isGroup: contact.isGroup,
+                    name: contact.name,
+                    profile: contact.profile,
+                    latestMessage: contact.latestMessage[0]?.message,
+                    latestMessgeSender: contact.latestMessageSender[0]?.firstName,
+                    latestMessageAt: contact.latestMessage[0]?.createdAt,
+                    unReadMessageCount: contact.members[0].unReadMessageCount || 0,
+                    isAdmin: contact.members[0].isAdmin
+                })
+            }
+            else {
+                console.log('g')
+                // console.log(contact.members.find(member => member.userId.equals(userId)))
+                data.push({
+                    _id: contact._id,
+                    isGroup: contact.isGroup,
+                    name: contact.users.find(member => !member._id.equals(userId))?.firstName,
+                    profile: contact.users.find(member => !member._id.equals(userId))?.profile,
+                    latestMessage: contact.latestMessage[0]?.message,
+                    latestMessgeSender: contact.latestMessageSender[0]?.firstName,
+                    latestMessageAt: contact.latestMessage[0]?.createdAt,
+                    // status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
+                    unReadMessageCount: contact.members.find(member => member.userId.equals(userId))?.unReadMessageCount || 0,
+                    userId: contact.users.find(member => !member._id.equals(userId))?._id
+                })
+            }
+        }
+
+        // console.log('All contacts: ', data)
+        data.sort((a, b) => new Date(b.latestMessageAt) - new Date(a.latestMessageAt))
+        res.status(200).json(data)
     }
     catch (err) {
         next(err)
     }
 }
+
+//     try {
+//         const userId = strToObjId(req.user.id)
+//         const contacts = await Message.aggregate([
+//             {
+//                 $match: {
+//                     $or: [
+//                         { senderId: userId },
+//                         { receiverId: userId }
+//                     ]
+//                 }
+//             },
+//             {
+//                 $sort: { updatedAt: -1 }
+//             },
+//             {
+//                 $group: {
+//                     _id: {
+//                         $cond: {
+//                             if: { $eq: ['$senderId', userId] },
+//                             then: '$receiverId',
+//                             else: '$senderId'
+//                         }
+//                     },
+//                     lastMessageTime: { $first: '$updatedAt' }
+//                 }
+//             },
+//             {
+//                 $lookup: {
+//                     from: 'users',
+//                     localField: '_id',
+//                     foreignField: '_id',
+//                     as: 'contactInfo'
+//                 }
+//             },
+//             {
+//                 $unwind: '$contactInfo'
+//             },
+//             {
+//                 $project: {
+//                     _id: 1,
+//                     lastMessageTime: 1,
+//                     firstName: '$contactInfo.firstName',
+//                     lastName: '$contactInfo.lastName',
+//                     email: '$contactInfo.email',
+//                 }
+//             },
+//             {
+//                 $sort: { lastMessageTime: -1 }
+//             }
+
+//         ])
+//         res.status(200).json(contacts)
+//     }
+//     catch (err) {
+//         next(err)
+//     }
+// }
 
 // Get All Users
 const getAllUsers = async (req, res, next) => {
@@ -144,5 +246,44 @@ const getUserInfo = async (req, res, next) => {
         next(err)
     }
 }
+const searchContacts = async (req, res, next) => {
+    try {
+        const userId = strToObjId(req.user.id)
+        const { searchTerm } = req.query
+        // console.log(searchTerm)
+        if (searchTerm === undefined || searchTerm === null) {
+            return res.status(400).send("searchTerm is requried.")
+        }
+        const sanitizedSearchTerm = searchTerm.replace(/[.*+?^${}()\[\]\\]/g, "\\$&");
+        const regex = new RegExp(sanitizedSearchTerm, "i");
+        const contacts = await User.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { _id: { $ne: userId } },
+                        {
+                            $or: [{ firstName: regex }, { lastName: regex }, { email: regex }]
+                        }]
+                }
+            },
+            {
+                $project: {
+                    _id: null,
+                    name: '$firstName',
+                    isGroup: 'false',
+                    userId: '$_id',
+                    status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
+                    profile: '$profile'
+                }
+            }
+        ])
 
-export { createUser, updateUser, deleteUser, getAllUsers, getUserInfo, getAllContacts }
+
+        res.status(200).json(contacts)
+    }
+    catch (err) {
+        next(err)
+    }
+}
+
+export { createUser, updateUser, deleteUser, getAllUsers, getUserInfo, getAllContacts, searchContacts }

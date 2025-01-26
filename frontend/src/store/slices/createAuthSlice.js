@@ -2,22 +2,28 @@ import { axiosInstance } from "@/config/axios"
 import connectSocket from "@/socket"
 import { CHECK_AUTH_ROUTE, HOST, LOGIN_ROUTE, LOGOUT_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
+import { initialChatState } from "./createChatSlice"
 
-export const createAuthSlice = (set, get) => ({
+const initialState = {
+    ...initialChatState,
     isLoggingIn: false,
     isCheckingAuth: true,   // very important to set as true
     userInfo: null,
-    socket: null,
-
+    socket: null
+}
+export const createAuthSlice = (set, get) => ({
+    ...initialState,
     login: async (data) => {
-        set({ isLoginLoading: true })
         try {
+            // console.log(data)
+            set({ isLoginLoading: true })
             const res = await axiosInstance.post(LOGIN_ROUTE, data)
             set({ userInfo: res.data.user })
 
             //Check: userId
-            const userId = res.data.user._id
-            const socket = connectSocket(userId)
+            const { _id: userId, firstName: userName } = res.data.user
+            console.log('userId : ', userId, 'userName : ', userName)
+            const socket = connectSocket()
             // console.log(socket)
             set({ socket })
             // get().connectSocket()
@@ -32,12 +38,7 @@ export const createAuthSlice = (set, get) => ({
         try {
             const res = await axiosInstance.get(LOGOUT_ROUTE)
             get().socket.disconnect()
-            set({
-                isLoggingIn: false,
-                isCheckingAuth: false,
-                userInfo: null,
-                socket: null,
-            })
+            set({ ...initialState, isCheckingAuth: false })
             toast.success(res.data.message)
         } catch (err) {
             // console.error(err)

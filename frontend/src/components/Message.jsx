@@ -1,9 +1,9 @@
 import { useAppStore } from '@/store'
-import { formatMessageTime } from '@/utils/formatMessageTime.js'
+import { formatMessageTime } from '@/utils/formatDateTime.js'
 import React, { useEffect, useRef } from 'react'
 
 const Message = ({ data }) => {
-  const { message, senderId, createdAt } = data
+  const { message, senderId, senderName, createdAt, isNotification } = data
   const { userInfo, selectedUserData } = useAppStore()
   //   console.log(userInfo, selectedUserData)
   const messageEndRef = useRef(null)
@@ -12,13 +12,17 @@ const Message = ({ data }) => {
       messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [message])
-  return (
+
+  // Todo : design this notification
+  return isNotification ? (
+    <div className="text-center">{message}</div>
+  ) : (
     <div
       className={`chat ${senderId != userInfo._id ? 'chat-start' : 'chat-end'}`}
       ref={messageEndRef}
     >
       <div className="chat-header">
-        {senderId == userInfo._id ? 'You' : selectedUserData.firstName}
+        {senderId == userInfo._id ? 'You' : senderName}
       </div>
       <div className="chat-bubble chat-bubble-primary max-w-96 whitespace-pre-wrap">
         {message}

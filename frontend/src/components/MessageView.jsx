@@ -7,7 +7,7 @@ import { useAppStore } from '@/store'
 const MessageView = () => {
   const { isChatsLoading, selectedUserData, getAllMessagesById } = useAppStore()
   useEffect(() => {
-    getAllMessagesById(selectedUserData._id)
+    if (selectedUserData._id) getAllMessagesById(selectedUserData._id)
   }, [selectedUserData, getAllMessagesById])
   return isChatsLoading ? (
     <p>loading....</p>

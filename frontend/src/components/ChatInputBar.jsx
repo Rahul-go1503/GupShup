@@ -1,13 +1,19 @@
+import { createNewChat, sendMessage } from '@/events/messageEvents.js'
 import { useAppStore } from '@/store'
 import { Paperclip, SendHorizontal, Smile } from 'lucide-react'
 import React, { useState } from 'react'
 
 const ChatInputBar = () => {
   const [message, setMessage] = useState('')
-  const { userInfo, selectedUserData, sendMessage } = useAppStore()
+  const { selectedUserData } = useAppStore()
   const sendHandler = () => {
     // console.log(message)
-    sendMessage({ message, to: selectedUserData._id })
+    const { _id, userId } = selectedUserData
+    if (_id) {
+      sendMessage({ message, id: _id })
+    } else {
+      createNewChat({ message, id: userId })
+    }
     setMessage('')
   }
   const handleKeyPress = (e) => {

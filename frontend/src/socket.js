@@ -1,35 +1,66 @@
 import { io } from "socket.io-client";
 import { useAppStore } from "./store";
+import { toast } from "sonner";
 // import { HOST } from "./utils/constants";
 
 
-const connectSocket = (userId) => {
+const connectSocket = () => {
+  const { userInfo } = useAppStore.getState()
+  // console.log(userInfo)
   const socket = io('http://localhost:5000/', {
-    query: {
-      userId: userId
-    },
+    autoConnect: false,
+    auth: userInfo,
     withCredentials: true
   });
-  // socket.connect()
+  socket.connect()
 
   socket.onAny((event, ...args) => {
     console.log(event, args);
   });
 
   socket.on("connect", () => {
-    console.log('Socket-Client is connected with socket id: ', socket.id); // x8WIv7-mJelg7on_ALbx
+    console.log(`Socket-Client(${userInfo.firstName}) is connected with socket id: ${socket.id}`)
   });
 
   socket.on('receiveMessage', (data) => {
-    // const { message, to } = data
-    // console.log(data)
-    const { selectedUserData, addMessage } = useAppStore.getState()
-    if (selectedUserData._id != data.receiverId && selectedUserData._id != data.senderId) return
+    const { addMessage } = useAppStore.getState()
     addMessage(data)
+  })
+
+  socket.on('newChat', (data) => {
+    // console.log(data)
+    const { users, setUsers } = useAppStore.getState()
+    // console.log(data)
+    setUsers([data, ...users])
+  })
+
+  socket.on('newGroup', (data) => {
+    console.log('newGroup Event handler', data)
+    try {
+      const { users, setUsers } = useAppStore.getState()
+      setUsers([data.group, ...users])
+      console.log(data)
+      toast.success('Group Created')
+    }
+    catch (err) {
+      console.log(err)
+      toast.error('Something went wrong')
+    }
+  })
+  socket.on('updateContactId', (contactId) => {
+    const { selectedUserData, setSelectedUserData } = useAppStore.getState()
+    // console.log(contactId)
+    setSelectedUserData({ ...selectedUserData, _id: contactId })
   })
   socket.on("disconnect", (reason) => {
     // the reason of the disconnection, for example "transport error"
     console.log(reason);
+
+    //Check: is it correct to off event here
+    socket.off('receiveMessage')
+    socket.off('newChat')
+    socket.off('newGroup')
+    socket.off('updateContactId')
   })
 
   socket.on("connect_error", (error) => {

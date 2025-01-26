@@ -1,35 +1,46 @@
 import { axiosInstance } from "@/config/axios"
-import socket from "@/socket"
-import { ALL_MESSAGES_BY_ID_ROUTE, ALL_USER_ROUTE } from "@/utils/constants"
+import { ALL_CONTACTS_ROUTE, ALL_MESSAGES_BY_ID_ROUTE, ALL_USER_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
+import { updateUnReadMessageCount } from "@/events/chatEvents"
 
-export const createChatSlice = (set) => ({
-
+export const initialChatState = {
     isUserLoading: false,
     isChatsLoading: false,
-    /**
-     * store all users
-     * @type {Array<{_id: string, firstname: string, lastname: string, email: string, profilePic: string}>}
-     */
+
     users: [],
     selectedUserData: undefined,
     selectedChatType: undefined,
-    /**
-     * store All messages from selected user
-     * @type {Array<{message: string, fromSelf: boolean, createdAt: string}>}
-     */
     selectedChatMessages: [],
+}
 
+export const createChatSlice = (set, get) => ({
+
+    ...initialChatState,
 
     setSelectedUserData: (userData) => set({ selectedUserData: userData }),
     setSelectedChatType: (type) => set({ selectedChatType: type }),
     setSelectedChatMessages: (messages) => set({ selectedChatMessages: messages }),
 
+    setUsers: (data) => set({ users: data }),
     getAllUsers: async () => {
         set({ isUserLoading: true })
         try {
             const response = await axiosInstance.get(ALL_USER_ROUTE)
+            // console.log(response.data)
+            set({ users: response.data })
+        } catch (err) {
+            console.log(err.message)
+            toast.error('Something Went Wrong')
+        } finally {
+            set({ isUserLoading: false })
+        }
+    },
+    getAllContacts: async () => {
+        // console.log('getAllContacts Called')
+        try {
+            set({ isUserLoading: true })
+            const response = await axiosInstance.get(ALL_CONTACTS_ROUTE)
             // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
@@ -50,7 +61,7 @@ export const createChatSlice = (set) => ({
     getAllMessagesById: async (userId) => {
         set({ isChatsLoading: true })
         try {
-            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { id: userId })
+            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { _id: userId })
             set({ selectedChatMessages: res.data.messages })
         }
         catch (err) {
@@ -60,24 +71,34 @@ export const createChatSlice = (set) => ({
             set({ isChatsLoading: false })
         }
     },
-    sendMessage: async (data) => {
-        try {
-            // const {message, to} = data
-            const { socket, addMessage } = useAppStore.getState()
-            // addMessage(data)
-            socket.emit('sendMessage', data)
-        }
-        catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
-        }
-    },
     // Todo : for channel
     addMessage: (data) => {
-        set((state) => {
-            return {
-                selectedChatMessages: [...state.selectedChatMessages, data]
+        console.log('addMessage Reducer: ', data)
+        const { selectedUserData, userInfo } = useAppStore.getState()
+        if (selectedUserData?._id == data.contactId) {
+            set((state) => {
+                return {
+                    selectedChatMessages: [...state.selectedChatMessages, data]
+                }
+            })
+        }
+        else {
+            const data2 = {
+                contactId: data.contactId,
+                userId: userInfo._id,
+                count: 1,
             }
+            updateUnReadMessageCount(data2)
+        }
+        const syncContacts = get().users.map((contact) => {
+            // console.log(contact._id, data.contactId)
+            if (contact._id == data.contactId) {
+                return { ...contact, latestMessage: data.message, latestMessgeSender: data.senderName, latestMessageAt: data.createdAt }
+            }
+            else return contact
         })
+        syncContacts.sort((a, b) => new Date(b.latestMessageAt) - new Date(a.latestMessageAt))
+        // console.log(syncContacts)
+        set({ users: syncContacts })
     }
 })

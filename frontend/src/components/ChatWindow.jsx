@@ -2,7 +2,7 @@ import React from 'react'
 import Message from './Message'
 import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
-import moment from 'moment'
+import { formatDateTitle } from '@/utils/formatDateTime'
 
 const ChatWindow = () => {
   const { selectedChatMessages } = useAppStore()
@@ -10,16 +10,12 @@ const ChatWindow = () => {
   const renderMessages = () => {
     let lastDate = null
     return selectedChatMessages.map((data, index) => {
-      const msgDate = moment(data.createdAt).format('YYYY-MM-DD')
+      const msgDate = formatDateTitle(data.createdAt)
       const showDate = msgDate !== lastDate
       lastDate = msgDate
       return (
         <div key={index}>
-          {showDate && (
-            <div className="text-center">
-              {moment(data.createdAt).format('LL')}
-            </div>
-          )}
+          {showDate && <div className="text-center">{lastDate}</div>}
           <Message data={data} />
         </div>
       )
