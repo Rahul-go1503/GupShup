@@ -35,7 +35,7 @@ const Contacts = () => {
     'loading...'
   ) : (
     <div className="col-span-3 row-span-11 grid grid-cols-1 grid-rows-12 border-r-2 border-r-neutral px-2">
-      <div className="row-span-1 m-2 flex items-center justify-between">
+      <div className="row-span-1 m-2 flex items-center justify-between p-2">
         <p className="font-bold">Chats</p>
         <NewChat />
         <CreateGroup />
@@ -54,7 +54,7 @@ const Contacts = () => {
           }}
         />
       </div>
-      <div className="row-span-10">
+      <div className="row-span-10 m-2">
         <ScrollArea className="h-full">
           {filteredContacts.map((contact, index) => (
             <ContactCard key={index} user={contact} />
