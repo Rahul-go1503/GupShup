@@ -6,12 +6,15 @@ export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`
 export const CHECK_AUTH_ROUTE = `${AUTH_ROUTES}/checkAuth`
 
-export const USER_ROUTES = '/api/user'
-export const USER_INFO_ROUTE = `${USER_ROUTES}/`
-export const SIGNUP_ROUTE = `${USER_ROUTES}/signup`
-export const ALL_CONTACTS_ROUTE = `${USER_ROUTES}/contacts`
-export const ALL_USER_ROUTE = `${USER_ROUTES}/all`
-export const SEARCH_ROUTE = `${USER_ROUTES}/search`
+
+// todo: fix these routes
+export const USER_ROUTE = '/api/user'
+export const USER_INFO_ROUTE = `${USER_ROUTE}/`
+export const SIGNUP_ROUTE = `${USER_ROUTE}/signup`
+export const ALL_CONTACTS_ROUTE = `${USER_ROUTE}/contacts`
+export const ALL_USER_ROUTE = `${USER_ROUTE}/all`
+export const SEARCH_ROUTE = `${USER_ROUTE}/search`
+export const USER_PROFILE_ROUTE = `${USER_ROUTE}/profile/`
 
 export const MESSAGE_ROUTES = '/api/messages'
 export const ALL_MESSAGES_BY_ID_ROUTE = `${MESSAGE_ROUTES}/all`
@@ -24,3 +27,5 @@ export const UPDATE_GROUP_ADMINS = `${GROUP_ROUTES}/admins`
 export const DELETE_GROUP = `${GROUP_ROUTES}/`
 export const ADD_NEW_MEMBER = `${GROUP_ROUTES}/member/add`
 export const REMOVE_MEMBER = `${GROUP_ROUTES}/member/remove`
+
+export const GENERATE_PRESIGNED_URL_ROUTE = `/api/upload/generatePreSignedUrl`

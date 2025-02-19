@@ -9,7 +9,7 @@ const UserSchema = new Schema({
     firstName: { type: String, require: true },
     lastName: { type: String },
     isActive: { type: Boolean, default: true },
-    profileImg: { type: String },
+    profile: { type: String },
     lastActive: { type: Date },
     phone: { type: Number },
     country: { type: String, default: 'India' }

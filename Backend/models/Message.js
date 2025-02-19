@@ -10,9 +10,10 @@ const messageSchema = new Schema({
         seenAt: { type: Date },
     }],
     isNotification: { type: Boolean },
-    messageTye: { type: String, enum: ['text', 'image', 'video', 'audio'], default: 'text' },
+    messageType: { type: String, enum: ['text', 'file'], default: 'text' },
+    // messageTye: { type: String, enum: ['text', 'image', 'video', 'audio'], default: 'text' },
     message: { type: String },
-    media: { type: String },
+    fileKey: { type: String },
     contactId: { type: Schema.Types.ObjectId, ref: 'Contact' },
     parentId: { type: Schema.Types.ObjectId, ref: 'Message' }
 }, { timestamps: true }

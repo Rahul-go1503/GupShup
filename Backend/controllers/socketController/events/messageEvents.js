@@ -1,5 +1,6 @@
 import Contact from "../../../models/Contact.js"
 import Message from "../../../models/Message.js"
+import { generateFileURL } from "../../../utils/generateFileURL.js"
 import { strToObjId } from "../../../utils/strToObjId.js"
 
 export const handleMessageEvents = (io, socket) => {
@@ -8,7 +9,7 @@ export const handleMessageEvents = (io, socket) => {
     const profile = null
     socket.on('sendMessage', async (data) => {
         try {
-            const { message, id } = data
+            const { message, id, messageType, fileKey } = data
             // console.log(message, contactId)
             let contactId = strToObjId(id)
             let contact = await Contact.findById(contactId).select('members')
@@ -32,7 +33,9 @@ export const handleMessageEvents = (io, socket) => {
                 senderId: userId,
                 contactId,
                 receiverIds,
-                message
+                message,
+                messageType,
+                fileKey
             })
             // console.log(newMessage)
             await newMessage.save()
@@ -41,10 +44,14 @@ export const handleMessageEvents = (io, socket) => {
             // socket.emit('receiveGroupMessage', newMessage)
             // console.log(contact.members)
 
+            // generating file url for the file key
+            const fileUrl = await generateFileURL(fileKey)
+
             for (const member of contact.members) {
                 // const receiverSocketId = userSocketMap.get(member.userId.toString())
                 const receiverRoom = member.userId.toString()
-                const data = { senderId: newMessage.senderId, senderName: newMessage.senderName, message, messageType: newMessage.messageTye, contactId, createdAt: newMessage.createdAt }
+                var data = { senderId: newMessage.senderId, senderName: newMessage.senderName, message, messageType: newMessage.messageType, contactId, createdAt: newMessage.createdAt }
+                if (fileUrl) data.fileUrl = fileUrl
                 // if (receiverSocketId) io.to(receiverSocketId).emit('receiveMessage', data) }
                 io.to(receiverRoom).emit('receiveMessage', data)
             }

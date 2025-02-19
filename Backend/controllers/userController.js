@@ -2,9 +2,10 @@ import User from "../models/User.js";
 import { strToObjId } from "../utils/strToObjId.js";
 import Contact from "../models/Contact.js";
 import { userSocketMap } from "../config/socket.js";
+import { deleteFile, generateFileURL, generatePresignedUrl } from "../utils/generateFileURL.js";
 
 // Create User - sign up
-const createUser = async (req, res, next) => {
+export const createUser = async (req, res, next) => {
     const { firstName, email, password } = req.body;
 
     if (!firstName || !email || !password) {
@@ -43,11 +44,29 @@ const createUser = async (req, res, next) => {
     }
 }
 
-// Update User
-const updateUser = async () => { }
+// Update User info
+export const updateUserInfo = async (req, res, next) => {
+    try {
+        const userId = strToObjId(req.user.id)
+        const { firstName, email, profileKey } = req.body
+        console.log(req.body)
+
+        await User.findByIdAndUpdate(userId, {
+            firstName: firstName,
+            email: email,
+            profile: profileKey
+        }, { new: true, runValidators: true })
+        // console.log(user1)
+        // profile key is already set in userinfo and no need of file key after saving to db
+        res.status(200).json({ user: { firstName, email }, message: 'Profile updated successfully' })
+    }
+    catch (err) {
+        next(err)
+    }
+}
 
 // Delete User
-const deleteUser = async (req, res, next) => {
+export const deleteUser = async (req, res, next) => {
     // console.log(req)
     try {
         // if(err) throw err
@@ -63,7 +82,7 @@ const deleteUser = async (req, res, next) => {
 }
 
 // Get All Contacts
-const getAllContacts = async (req, res, next) => {
+export const getAllContacts = async (req, res, next) => {
     try {
         const userId = strToObjId(req.user.id)
         const contacts = await Contact.aggregate([
@@ -225,7 +244,7 @@ const getAllContacts = async (req, res, next) => {
 // }
 
 // Get All Users
-const getAllUsers = async (req, res, next) => {
+export const getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find().select('-password')
         res.status(200).json(users)
@@ -236,17 +255,25 @@ const getAllUsers = async (req, res, next) => {
 }
 
 // Get User By Id
-const getUserInfo = async (req, res, next) => {
+export const getUserInfo = async (req, res, next) => {
     try {
         const userId = req.user.id
-        const user = await User.find({ _id: userId }).select('-password')
-        res.status(200).json({ user })
+        const user = await User.findById(userId).select('-password')
+
+        const data = {
+            _id: user._id,
+            firstName: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            profile: await generateFileURL(user.profile)
+        }
+        res.status(200).json({ user: data })
     }
     catch (err) {
         next(err)
     }
 }
-const searchContacts = async (req, res, next) => {
+export const searchContacts = async (req, res, next) => {
     try {
         const userId = strToObjId(req.user.id)
         const { searchTerm } = req.query
@@ -286,4 +313,36 @@ const searchContacts = async (req, res, next) => {
     }
 }
 
-export { createUser, updateUser, deleteUser, getAllUsers, getUserInfo, getAllContacts, searchContacts }
+
+export const uploadProfileImage = async (req, res, next) => {
+    try {
+        const userId = req.user.id
+        const { fileName, fileType } = req.body; // Get file name and type from frontend
+
+        if (!fileName || !fileType) {
+            return res.status(400).json({ error: "Missing fileName or fileType" });
+        }
+
+        const key = `uploads/profiles/${userId}`; // to ensure one profile image per user
+        const url = await generatePresignedUrl({ fileType, key })
+
+        const fileUrl = await generateFileURL(key)
+        console.log(url, key)
+        res.status(200).json({ url, fileKey: key, fileUrl });
+    } catch (err) {
+        next(err)
+    }
+
+}
+
+export const removeProfileImage = async (req, res, next) => {
+    try {
+        const userId = req.user.id
+        const oldUser = await User.findByIdAndUpdate(userId, { profile: null })
+        console.log(oldUser, oldUser.profile)
+        if (oldUser?.profile) await deleteFile(oldUser.profile, next)
+        res.status(200).json({ message: 'File deleted successfully' });
+    } catch (err) {
+        next(err)
+    }
+}

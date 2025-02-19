@@ -2,6 +2,7 @@ import Message from "../models/Message.js"
 import { strToObjId } from "../utils/strToObjId.js"
 import Contact from "../models/Contact.js"
 import { io } from "../config/socket.js"
+import { generateFileURL } from "../utils/generateFileURL.js"
 
 // get All messages for a user
 const getAllMessagesById = async (req, res) => {
@@ -29,16 +30,24 @@ const getAllMessagesById = async (req, res) => {
                     senderId: 1,
                     messageType: 1,
                     message: 1,
-                    media: 1,
+                    fileKey: 1,
                     contactId: 1,
                     parentId: 1,
                     createdAt: 1,
                     senderName: '$senderInfo.firstName',
                     isNotification: 1
+
                 },
             },
             // senderName: '$senderInfo.firstName', // Replace senderId with firstName
         ])
+
+        for (const message of messages) {
+            // Todo: remove fileKey from the response
+            // console.log(message.fileKey)
+            message.fileUrl = await generateFileURL(message.fileKey)
+            // console.log(message)
+        }
         res.status(200).json({ messages })
     }
     catch (error) {

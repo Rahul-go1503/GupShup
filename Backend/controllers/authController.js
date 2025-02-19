@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { generateFileURL } from '../utils/generateFileURL.js';
 
 const cookieOptions = {
     htttponly: true,
@@ -32,7 +33,14 @@ const loginHandler = async (req, res, next) => {
         // const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
         res.cookie('jwt', accessToken, cookieOptions)
         // Todo: remove password from here
-        res.status(200).json({ message: `${user.firstName} Login Successfully`, user });
+        const data = {
+            _id: user._id,
+            firstName: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            profile: await generateFileURL(user.profile)
+        }
+        res.status(200).json({ message: `${user.firstName} Login Successfully`, user: data });
     }
     catch (err) {
         next(err)
@@ -53,8 +61,15 @@ const checkAuthHandler = async (req, res, next) => {
     try {
         const userId = req.user.id
         // console.log(req.user)
-        const user = await User.findOne({ _id: userId }).select('-password')
-        res.status(200).json({ user })
+        const user = await User.findById(userId).select('-password')
+        const data = {
+            _id: user._id,
+            firstName: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            profile: await generateFileURL(user.profile)
+        }
+        res.status(200).json({ user: data })
     }
     catch (err) {
         next(err)

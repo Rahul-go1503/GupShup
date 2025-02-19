@@ -1,15 +1,15 @@
 import { axiosInstance } from "@/config/axios"
 import connectSocket from "@/socket"
-import { CHECK_AUTH_ROUTE, HOST, LOGIN_ROUTE, LOGOUT_ROUTE } from "@/utils/constants"
+import { CHECK_AUTH_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
-import { initialChatState } from "./createChatSlice"
+import { useAppStore } from ".."
 
 const initialState = {
-    ...initialChatState,
-    isLoggingIn: false,
+    isLoginLoading: false,
     isCheckingAuth: true,   // very important to set as true
+
     userInfo: null,
-    socket: null
+    socket: null,
 }
 export const createAuthSlice = (set, get) => ({
     ...initialState,
@@ -38,10 +38,14 @@ export const createAuthSlice = (set, get) => ({
         try {
             const res = await axiosInstance.get(LOGOUT_ROUTE)
             get().socket.disconnect()
-            set({ ...initialState, isCheckingAuth: false })
+
+            const { resetStore } = useAppStore.getState()
+            // set({ ...initialState, isCheckingAuth: false })
+            resetStore()
+            set({ isCheckingAuth: false })
             toast.success(res.data.message)
         } catch (err) {
-            // console.error(err)
+            console.error(err)
             toast.error('Something went wrong', err.message)
         }
     },
@@ -64,5 +68,9 @@ export const createAuthSlice = (set, get) => ({
         finally {
             set({ isCheckingAuth: false })
         }
+    },
+
+    reset: () => {
+        set(initialState)
     }
 })

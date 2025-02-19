@@ -24,6 +24,7 @@ const connectSocket = () => {
 
   socket.on('receiveMessage', (data) => {
     const { addMessage } = useAppStore.getState()
+    console.log('receiveMessage', data)
     addMessage(data)
   })
 

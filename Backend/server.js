@@ -36,7 +36,6 @@ app.use('/api/user', userRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/group', groupRoutes)
 
-
 // root route
 app.get('/', (req, res) => {
   res.send('GupShup Chat Application Server is running!');

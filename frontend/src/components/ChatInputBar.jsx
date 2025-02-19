@@ -1,11 +1,30 @@
 import { createNewChat, sendMessage } from '@/events/messageEvents.js'
 import { useAppStore } from '@/store'
+import EmojiPicker from 'emoji-picker-react'
 import { Paperclip, SendHorizontal, Smile } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import FilePicker from './FilePicker'
 
 const ChatInputBar = () => {
   const [message, setMessage] = useState('')
   const { selectedUserData } = useAppStore()
+
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+  const [filePickerOpen, setFilePickerOpen] = useState(false)
+
+  const emojiRef = useRef(null)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setEmojiPickerOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [setEmojiPickerOpen])
+
   const sendHandler = () => {
     // console.log(message)
     const { _id, userId } = selectedUserData
@@ -23,11 +42,36 @@ const ChatInputBar = () => {
       sendHandler()
     }
   }
+
   return (
     <>
       <div className="row-span-1 flex items-center justify-around gap-2 px-2">
-        <Smile />
-        <Paperclip />
+        <div className="relative">
+          <div onClick={() => setEmojiPickerOpen(true)}>
+            <Smile />
+          </div>
+          <div className="absolute bottom-10 left-0" ref={emojiRef}>
+            <EmojiPicker
+              open={emojiPickerOpen}
+              onEmojiClick={(e) => setMessage(message + e.emoji)}
+              previewConfig={{ showPreview: false }}
+              emojiStyle="native"
+              lazyLoadEmojis={true}
+              skinTonesDisabled={true}
+              // onSkinToneChange={(e) => console.log(e)}
+            />
+          </div>
+        </div>
+        <div className="relative">
+          <div onClick={() => setFilePickerOpen(true)}>
+            <Paperclip />
+          </div>
+          {filePickerOpen && (
+            <div className="absolute bottom-10 left-0">
+              <FilePicker setFilePickerOpen={setFilePickerOpen} />
+            </div>
+          )}
+        </div>
         <textarea
           // type="text"
           value={message}
