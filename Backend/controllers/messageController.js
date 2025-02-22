@@ -2,7 +2,7 @@ import Message from "../models/Message.js"
 import { strToObjId } from "../utils/strToObjId.js"
 import Contact from "../models/Contact.js"
 import { io } from "../config/socket.js"
-import { generateFileURL } from "../utils/generateFileURL.js"
+import { generateFileURL, generatePresignedUrl } from "../utils/generateFileURL.js"
 
 // get All messages for a user
 const getAllMessagesById = async (req, res) => {
@@ -103,5 +103,25 @@ const sendMessage = async (data, callback) => {
         console.log(error)
         callback({ error: error.message })
     }
+}
+
+export const uploadFile = async (req, res, next) => {
+    try {
+        const { fileName, fileType } = req.body; // Get file name and type from frontend
+
+        if (!fileName || !fileType) {
+            return res.status(400).json({ error: "Missing fileName or fileType" });
+        }
+
+        const key = `uploads/${fileType}/${Date.now()}_${fileName}` // Unique file name
+        const url = await generatePresignedUrl({ fileType, key })
+
+        const fileUrl = await generateFileURL(key)
+        // console.log(url, key)
+        res.status(200).json({ url, fileKey: key, fileUrl });
+    } catch (err) {
+        next(err)
+    }
+
 }
 export { getAllMessagesById, sendMessage }

@@ -13,7 +13,7 @@ const Message = ({ data }) => {
     messageType,
     fileUrl,
   } = data
-  const { userInfo, selectedUserData } = useAppStore()
+  const { userInfo } = useAppStore()
   //   console.log(userInfo, selectedUserData)
   const messageEndRef = useRef(null)
   useEffect(() => {
@@ -94,7 +94,7 @@ const Message = ({ data }) => {
         {senderId == userInfo._id ? 'You' : senderName}
       </div>
       <div className="chat-bubble chat-bubble-primary max-w-96 whitespace-pre-wrap">
-        {messageType == 'file' ? <a href={fileUrl}>{fileUrl}</a> : message}
+        {renderMessageContent()}
       </div>
       <div className="chat-footer opacity-50">
         <time className="text-xs opacity-50" dateTime={createdAt}>

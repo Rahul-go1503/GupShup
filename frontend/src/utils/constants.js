@@ -17,6 +17,7 @@ export const SEARCH_ROUTE = `${USER_ROUTE}/search`
 export const USER_PROFILE_ROUTE = `${USER_ROUTE}/profile/`
 
 export const MESSAGE_ROUTES = '/api/messages'
+// Todo: should be get request with :id
 export const ALL_MESSAGES_BY_ID_ROUTE = `${MESSAGE_ROUTES}/all`
 
 export const GROUP_ROUTES = 'api/group'

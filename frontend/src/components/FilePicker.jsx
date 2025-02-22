@@ -65,6 +65,7 @@ const FilePicker = ({ setFilePickerOpen }) => {
   const sendFilesHandler = () => {
     setFilePickerOpen(false)
     setSelectedFiles([])
+    // console.log(files)
     uploadFile(selectedFiles)
   }
 

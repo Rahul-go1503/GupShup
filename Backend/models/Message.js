@@ -10,7 +10,7 @@ const messageSchema = new Schema({
         seenAt: { type: Date },
     }],
     isNotification: { type: Boolean },
-    messageType: { type: String, enum: ['text', 'file'], default: 'text' },
+    messageType: { type: String, enum: ['text', 'image', 'video', 'audio', 'pdf', 'file'], default: 'text' },
     // messageTye: { type: String, enum: ['text', 'image', 'video', 'audio'], default: 'text' },
     message: { type: String },
     fileKey: { type: String },

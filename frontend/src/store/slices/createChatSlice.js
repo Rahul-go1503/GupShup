@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/config/axios"
-import { ALL_CONTACTS_ROUTE, ALL_MESSAGES_BY_ID_ROUTE, ALL_USER_ROUTE, GENERATE_PRESIGNED_URL_ROUTE } from "@/utils/constants"
+import { ALL_MESSAGES_BY_ID_ROUTE, MESSAGE_ROUTES } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
 import { updateUnReadMessageCount } from "@/events/chatEvents"
@@ -9,12 +9,22 @@ import axios from "axios"
 export const initialState = {
     isChatsLoading: false,
     isFilesUploading: false,
+    isGroupUpdating: false,
 
     selectedUserData: undefined,
     selectedChatType: undefined,
     selectedChatMessages: [],
 }
 
+const getMessageType = (fileType) => {
+
+    if (fileType.startsWith('image/')) return 'image'
+    if (fileType.startsWith('audio/')) return 'audio'
+    if (fileType.startsWith('video/')) return 'video'
+    if (fileType === 'application/pdf') return 'pdf'
+
+    return 'file' // Default case for other files like docs, zips, etc.
+}
 export const createChatSlice = (set, get) => ({
 
     ...initialState,
@@ -23,34 +33,6 @@ export const createChatSlice = (set, get) => ({
     setSelectedChatType: (type) => set({ selectedChatType: type }),
     setSelectedChatMessages: (messages) => set({ selectedChatMessages: messages }),
 
-    setUsers: (data) => set({ users: data }),
-    getAllUsers: async () => {
-        set({ isUserLoading: true })
-        try {
-            const response = await axiosInstance.get(ALL_USER_ROUTE)
-            // console.log(response.data)
-            set({ users: response.data })
-        } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
-        } finally {
-            set({ isUserLoading: false })
-        }
-    },
-    getAllContacts: async () => {
-        // console.log('getAllContacts Called')
-        try {
-            set({ isUserLoading: true })
-            const response = await axiosInstance.get(ALL_CONTACTS_ROUTE)
-            // console.log(response.data)
-            set({ users: response.data })
-        } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
-        } finally {
-            set({ isUserLoading: false })
-        }
-    },
     closeChat: () => {
         set({
             selectedUserData: undefined,
@@ -121,8 +103,8 @@ export const createChatSlice = (set, get) => ({
                     fileName: file.name,
                     fileType: file.type
                 }
-                const res1 = await axiosInstance.post(GENERATE_PRESIGNED_URL_ROUTE, data)
-                // console.log(res1)
+                const res1 = await axiosInstance.post(MESSAGE_ROUTES, data)
+                console.log(res1)
                 const res = await axios.put(res1.data.url, file, {
                     headers: {
                         "Content-Type": file.type,  // Ensure correct content type
@@ -130,7 +112,7 @@ export const createChatSlice = (set, get) => ({
                 })
                 if (res.status === 200) {
                     const { _id, userId } = useAppStore.getState().selectedUserData
-                    const messageType = 'file'
+                    const messageType = getMessageType(file.type)
                     if (_id) {
                         sendMessage({ id: _id, messageType, fileKey: res1.data.fileKey })
                     } else {
@@ -144,6 +126,20 @@ export const createChatSlice = (set, get) => ({
             toast.error('Something Went Wrong')
         } finally {
             set({ isFilesUploading: false })
+        }
+    },
+
+    updateGroup: async (data) => {
+        try {
+            set({ isUpdating: true });
+            const { data } = await axiosInstance.put(`/group/${groupId}`, updatedData);
+            set((state) => ({
+                groups: state.groups.map((group) => group._id === groupId ? data : group),
+                isUpdating: false,
+            }));
+        } catch (error) {
+            console.error('Error updating group:', error);
+            set({ isUpdating: false });
         }
     },
     reset: () => {

@@ -1,9 +1,11 @@
 import { Router } from "express"
-import { getAllMessagesById } from "../controllers/messageController.js"
+import { getAllMessagesById, uploadFile } from "../controllers/messageController.js"
 import validateJWT from "../middlewares/validateJWT.js"
 
 const route = Router()
 
-route.post('/all', validateJWT, getAllMessagesById)
+route.use(validateJWT)
+route.post('/', uploadFile)
+route.post('/all', getAllMessagesById)
 
 export default route

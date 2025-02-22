@@ -19,7 +19,7 @@ const ContactCard = ({ user }) => {
         <div className="h-12 w-12 rounded-full ring-1 ring-primary">
           <img
             src={
-              user.profilePicture ||
+              user.profile ||
               'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
             }
             alt={user.name}

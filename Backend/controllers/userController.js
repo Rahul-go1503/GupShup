@@ -150,7 +150,7 @@ export const getAllContacts = async (req, res, next) => {
                     _id: contact._id,
                     isGroup: contact.isGroup,
                     name: contact.name,
-                    profile: contact.profile,
+                    profile: await generateFileURL(contact.profile),
                     latestMessage: contact.latestMessage[0]?.message,
                     latestMessgeSender: contact.latestMessageSender[0]?.firstName,
                     latestMessageAt: contact.latestMessage[0]?.createdAt,
@@ -159,13 +159,12 @@ export const getAllContacts = async (req, res, next) => {
                 })
             }
             else {
-                console.log('g')
                 // console.log(contact.members.find(member => member.userId.equals(userId)))
                 data.push({
                     _id: contact._id,
                     isGroup: contact.isGroup,
                     name: contact.users.find(member => !member._id.equals(userId))?.firstName,
-                    profile: contact.users.find(member => !member._id.equals(userId))?.profile,
+                    profile: await generateFileURL(contact.users.find(member => !member._id.equals(userId))?.profile),
                     latestMessage: contact.latestMessage[0]?.message,
                     latestMessgeSender: contact.latestMessageSender[0]?.firstName,
                     latestMessageAt: contact.latestMessage[0]?.createdAt,
@@ -327,7 +326,7 @@ export const uploadProfileImage = async (req, res, next) => {
         const url = await generatePresignedUrl({ fileType, key })
 
         const fileUrl = await generateFileURL(key)
-        console.log(url, key)
+        // console.log(url, key)
         res.status(200).json({ url, fileKey: key, fileUrl });
     } catch (err) {
         next(err)

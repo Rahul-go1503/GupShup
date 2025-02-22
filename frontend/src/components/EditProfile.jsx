@@ -46,8 +46,10 @@ const EditProfileSection = () => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value })
   }
 
+  //Todo: check for firefox
   // Handle image upload
   const handleImageUpload = (e) => {
+    // console.log('picker opened')
     const file = e.target.files[0]
     if (file) {
       const reader = new FileReader()
