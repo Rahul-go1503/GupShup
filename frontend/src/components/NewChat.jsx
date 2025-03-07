@@ -1,10 +1,11 @@
 import { axiosInstance } from '@/config/axios'
 import { SEARCH_ROUTE } from '@/utils/constants'
-import { MessageSquarePlus, Search } from 'lucide-react'
+import { Search, UserRoundPlus } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import NewChatContactCard from './NewChatContactCard.jsx'
 import { ScrollArea } from './ui/scroll-area.jsx'
+import { useAppStore } from '@/store/index.js'
 
 const NewChat = () => {
   const [contacts, setContacts] = useState([])
@@ -12,6 +13,7 @@ const NewChat = () => {
   const [newChat, setNewChat] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
 
+  const { users } = useAppStore()
   const dropdownRef = useRef(null)
   const searchUsers = async (query) => {
     // console.log(searhTerm)
@@ -28,7 +30,9 @@ const NewChat = () => {
       toast.error('Something Went Wrong')
     }
   }
-
+  // useEffect(() => {
+  //   setContacts(users)
+  // }, [])
   //   handle on dropdown close
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -38,6 +42,7 @@ const NewChat = () => {
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
@@ -46,12 +51,12 @@ const NewChat = () => {
     <div className="dropdown">
       <div tabIndex={0} role="button" className="m-1">
         <div className="my-2 hover:cursor-pointer">
-          <MessageSquarePlus />
+          <UserRoundPlus />
         </div>
       </div>
       <div
         tabIndex={0}
-        className="card dropdown-content card-compact relative z-[1] w-64 bg-base-200 p-2 text-primary-content shadow"
+        className="card dropdown-content card-compact relative z-[1] w-64 bg-base-100 p-2 text-primary-content shadow"
         ref={dropdownRef}
       >
         <div>
@@ -68,20 +73,12 @@ const NewChat = () => {
               onChange={(e) => searchUsers(e.target.value)}
             />
           </div>
-          {/* <div className="btn" onClick={() => setNewChat(false)}>
-            New Group
-          </div> */}
           <ScrollArea className="h-64">
             {contacts.map((contact, index) => (
               <NewChatContactCard key={index} user={contact} />
             ))}
           </ScrollArea>
         </div>
-        {/* <div
-          className={`absolute h-64 w-64 translate-x-${newChat ? 'full' : '0'} bg-red-400`}
-        >
-          hello
-        </div> */}
       </div>
     </div>
   )

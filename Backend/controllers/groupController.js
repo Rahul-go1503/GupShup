@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import { strToObjId } from '../utils/strToObjId.js'
 import Contact from '../models/Contact.js'
+import { generateFileURL } from '../utils/generateFileURL.js'
 const createNewGroup = async (req, res, next) => {
     try {
         const { groupName, description, members } = req.body
@@ -120,11 +121,28 @@ const deleteGroup = async (req, res, next) => {
 const getGroupDetails = async (req, res, next) => {
     try {
         const { id } = req.params
-        const group = await Group.findOne({ _id: strToObjId(id) })
+        const userId = strToObjId(req.user.id)
+        const group = await Contact.findOne({ _id: strToObjId(id), "members.userId": userId }).populate({
+            path: "members.userId",
+            select: "firstName profile email", // Fetch required fields
+        }).select('-latestMessageId').lean()
         if (!group) {
-            return res.status(403).json({ message: "Group doesn't exists" })
+            return res.status(403).json({ message: "Group doesn't exists or you are not a member of this group." })
         }
-        return res.status(200).json({ group })
+        // Generate pre-signed URL for group profile
+        group.profile = await generateFileURL(group.profile);
+
+        console.log(group.profile, group.members)
+        // Generate pre-signed URLs for members' profiles
+        group.members = await Promise.all(
+            group.members.map(async (member) => ({
+                ...member,
+                userId: {
+                    ...member.userId,
+                    profile: await generateFileURL(member.userId.profile),
+                },
+            })))
+        return res.status(200).json(group)
     }
     catch (err) {
         next(err)

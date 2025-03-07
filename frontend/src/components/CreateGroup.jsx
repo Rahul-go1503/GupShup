@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Search } from 'lucide-react'
+import { MessageSquarePlus, Pencil, Search, Trash2 } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollArea, ScrollBar } from './ui/scroll-area'
 import NewGroupContactCard from './NewGroupContactCard'
@@ -12,24 +12,29 @@ const CreateGroup = () => {
   const [groupName, setGroupName] = useState('')
   const [description, setDescription] = useState('')
   const [query, setQuery] = useState('')
+  const [isHovered, setIsHovered] = useState(false)
 
   const [members, setMembers] = useState([])
   const [chipCount, setChipCount] = useState(0)
   const [step, setStep] = useState(0)
 
-  const { users } = useAppStore()
+  const { users, uploadProfileImage, removeProfileImage } = useAppStore()
 
   /***** Refs *****/
   const allUsers = useRef([])
   const dropdownRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   const resetState = () => {
-    setGroupName('')
-    setDescription('')
-    setQuery('')
-    setMembers(allUsers.current)
-    setChipCount(0)
-    setStep(0)
+    // to handle the animation flucution
+    setTimeout(() => {
+      setGroupName('')
+      setDescription('')
+      setQuery('')
+      setMembers(allUsers.current)
+      setChipCount(0)
+      setStep(0)
+    }, 1000)
   }
 
   useEffect(() => {
@@ -45,6 +50,7 @@ const CreateGroup = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        // console.log('triggered')
         resetState()
       }
     }
@@ -72,163 +78,190 @@ const CreateGroup = () => {
       })
     )
   }
-  //Todo: not working will check
   const closeDropdown = () => {
-    console.log('triggered')
-    console.log('triggered inside', dropdownRef.current)
     if (dropdownRef.current) {
-      console.log('triggered inside', dropdownRef.current)
-      //   dropdownRef.current.removeAttribute('open')
-      dropdownRef.current.classList.remove('dropdown-open')
+      document.getElementById('createGroup_modal').close()
     }
   }
   const handleSubmit = (e) => {
     e.preventDefault()
-    createNewGroup({
-      groupName,
-      description,
-      members: members
-        .filter((member) => member.selected)
-        .map((member) => member.userId),
-    })
+    // createNewGroup({
+    //   groupName,
+    //   description,
+    //   members: members
+    //     .filter((member) => member.selected)
+    //     .map((member) => member.userId),
+    // })
     closeDropdown()
     resetState()
   }
 
+  //Todo: check for firefox
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    // console.log('picker opened')
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfileData({ ...profileData, profile: reader.result })
+      }
+      reader.readAsDataURL(file)
+      // console.log(file)
+      //   uploadProfileImage(file)
+      // setProfileData({ ...profileData, fileKey: key })
+      // upload
+    }
+  }
+
   return (
-    <div className="dropdown dropdown-right" ref={dropdownRef}>
-      <div tabIndex={0} role="button" className="m-1">
-        <div className="my-2 hover:cursor-pointer">
-          <MessageSquarePlus />
-        </div>
-      </div>
-      <div
-        tabIndex={0}
-        className="dropdown-content relative z-10 overflow-hidden bg-base-300"
-      >
-        <div className="card card-compact h-96 w-64 bg-base-300 p-2 shadow">
-          <h3 className="text-center font-bold">Create New Group</h3>
-          <div>
-            <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-              <div className="text-muted self-auto">
-                <Search size={20} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search or start a new chat"
-                className="me-2 w-full rounded bg-transparent outline-none"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                }}
-              />
+    <dialog id="createGroup_modal" className="modal">
+      <div className="modal-box" ref={dropdownRef}>
+        <h3 className="text-center font-bold">Create New Group</h3>
+        <div className="relative overflow-hidden">
+          <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+            <div className="text-muted self-auto">
+              <Search size={20} />
             </div>
-            <ScrollArea className="my-1 w-full">
-              <div className="flex gap-1">
-                {members.map(
-                  (member, index) =>
-                    member.selected && (
-                      <UserChip
-                        key={index}
-                        data={member.name}
-                        funHandleRemove={() => handleSelect(index)}
-                      />
-                    )
+            <input
+              type="text"
+              placeholder="Search or start a new chat"
+              className="me-2 w-full rounded bg-transparent outline-none"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value)
+              }}
+            />
+          </div>
+
+          {/* selected member list */}
+          <ScrollArea className="my-1 w-full">
+            <div className="flex gap-1">
+              {members.map(
+                (member, index) =>
+                  member.selected && (
+                    <UserChip
+                      key={index}
+                      data={member.name}
+                      funHandleRemove={() => handleSelect(index)}
+                    />
+                  )
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          {/* Next Button */}
+          {chipCount != 0 && (
+            <Button
+              onClick={() => {
+                setStep(1)
+              }}
+            >
+              Next
+            </Button>
+          )}
+
+          {/* Contact List */}
+          <ScrollArea className="mt-2 h-64">
+            {filteredContacts.map((contact, index) => (
+              <NewGroupContactCard
+                key={index}
+                data={contact}
+                funHandleSelect={() => handleSelect(index)}
+              />
+            ))}
+          </ScrollArea>
+          {/* second step */}
+          <div
+            className={`absolute left-0 top-0 z-[10] h-full w-full bg-base-100 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'} p-2`}
+          >
+            {/* <h3 className="text-center font-bold">Create New Group</h3> */}
+
+            {/* Back Button */}
+            <div>
+              {
+                <Button
+                  onClick={() => {
+                    setStep(0), setQuery('')
+                  }}
+                >
+                  Back
+                </Button>
+              }
+            </div>
+
+            {/* Group Profile Picture */}
+            <div className="my-2 flex flex-col items-center">
+              <div
+                className="relative rounded-full"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                <img
+                  src={
+                    'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                  }
+                  alt="Group Profile"
+                  className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"
+                />
+                {isHovered && (
+                  <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50">
+                    <div className="flex gap-2">
+                      <div onClick={() => fileInputRef.current.click()}>
+                        <Pencil size={20} className="text-white" />
+                      </div>
+                      {/* <div onClick={() => handleRemoveProfile()}>
+                        <Trash2 size={20} className="text-white" />
+                      </div> */}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </div>
                 )}
               </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-            {chipCount != 0 && (
-              <Button
-                onClick={() => {
-                  setStep(1)
-                }}
-              >
-                Next
-              </Button>
-            )}
-            <ScrollArea className="mt-2 h-64">
-              {filteredContacts.map((contact, index) => (
-                <NewGroupContactCard
-                  key={index}
-                  data={contact}
-                  funHandleSelect={() => handleSelect(index)}
-                />
-              ))}
-            </ScrollArea>
-          </div>
-        </div>
-        <div
-          className={`card card-compact absolute left-0 top-0 z-[1] h-96 w-64 bg-base-300 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'} p-2 shadow`}
-        >
-          <h3 className="text-center font-bold">Create New Group</h3>
-          <div>
-            {
-              <Button
-                onClick={() => {
-                  setStep(0), setQuery('')
-                }}
-              >
-                Back
-              </Button>
-            }
-          </div>
-          <div className="">
-            <form
-              onSubmit={handleSubmit}
-              style={{ maxWidth: '500px', margin: 'auto' }}
-            >
-              <h3 className="text-center font-bold">Create New Group</h3>
-              <div>
-                <label>Group Name:</label>
+            </div>
+
+            {/* Group Name & Description */}
+            <div className="flex flex-col gap-2">
+              <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
                 <input
                   type="text"
+                  placeholder="Group Name"
+                  className="me-2 w-full rounded bg-transparent outline-none"
                   value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  placeholder="Enter group name"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    marginBottom: '10px',
+                  onChange={(e) => {
+                    setGroupName(e.target.value)
                   }}
                 />
               </div>
-              <div>
-                <label>Group Description:</label>
-                <textarea
+              <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+                <input
+                  type="text"
+                  placeholder="Group description"
+                  className="me-2 w-full rounded bg-transparent outline-none"
                   value={description}
-                  rows={2}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter group description"
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    marginBottom: '10px',
+                  onChange={(e) => {
+                    setDescription(e.target.value)
                   }}
                 />
               </div>
-            </form>
-            <div className="">
-              <button
-                style={{
-                  marginTop: '15px',
-                  padding: '10px',
-                  background: 'blue',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
-                onClick={handleSubmit}
-              >
-                Create Group
-              </button>
+              <div className="">
+                <Button onClick={handleSubmit}>Create</Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   )
 }
 

@@ -94,7 +94,7 @@ const sendMessage = async (data, callback) => {
         for (const member of contact.members) {
             // const receiverSocketId = userSocketMap.get(member.userId.toString())
             const receiverRoom = member.userId.toString()
-            const data = { senderId: newMessage.senderId, senderName: newMessage.senderName, message, messageType: newMessage.messageTye, contactId, createdAt: newMessage.createdAt, unReadMessageCount: member.unReadMessageCount }
+            const data = { senderId: newMessage.senderId, senderName: newMessage.senderName, message, messageType: newMessage.messageType, contactId, createdAt: newMessage.createdAt, unReadMessageCount: member.unReadMessageCount }
             // if (receiverSocketId) io.to(receiverSocketId).emit('receiveMessage', data) }
             io.to(receiverRoom).emit('receiveMessage', data)
         }

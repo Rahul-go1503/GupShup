@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/config/axios"
-import { ALL_MESSAGES_BY_ID_ROUTE, MESSAGE_ROUTES } from "@/utils/constants"
+import { ALL_MESSAGES_BY_ID_ROUTE, GROUP_ROUTES, MESSAGE_ROUTES } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
 import { updateUnReadMessageCount } from "@/events/chatEvents"
@@ -12,7 +12,7 @@ export const initialState = {
     isGroupUpdating: false,
 
     selectedUserData: undefined,
-    selectedChatType: undefined,
+    selectedGroupData: undefined,
     selectedChatMessages: [],
 }
 
@@ -30,21 +30,29 @@ export const createChatSlice = (set, get) => ({
     ...initialState,
 
     setSelectedUserData: (userData) => set({ selectedUserData: userData }),
-    setSelectedChatType: (type) => set({ selectedChatType: type }),
     setSelectedChatMessages: (messages) => set({ selectedChatMessages: messages }),
 
     closeChat: () => {
         set({
             selectedUserData: undefined,
-            selectedChatType: undefined,
             selectedChatMessages: [],
         })
     },
 
-    getAllMessagesById: async (userId) => {
-        set({ isChatsLoading: true })
+    getAllMessagesById: async (id) => {
         try {
-            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { _id: userId })
+            set({ isChatsLoading: true })
+            if (get().selectedUserData.isGroup) {
+                const getGroupDetails = await axiosInstance.get(`${GROUP_ROUTES}/${id}`)
+                // console.log(getGroupDetails)
+                set({ selectedGroupData: getGroupDetails.data })
+            }
+            else {
+                // console.log('private message')
+                set({ selectedGroupData: undefined })
+            }
+            // console.log()
+            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { _id: id })
             set({ selectedChatMessages: res.data.messages })
         }
         catch (err) {

@@ -1,5 +1,7 @@
 import { useAppStore } from '@/store'
+import { Pencil } from 'lucide-react'
 import React from 'react'
+import EditGroupSection from './EditGroup'
 
 const ChatDetails = () => {
   const { selectedUserData } = useAppStore()
@@ -32,8 +34,15 @@ const ChatDetails = () => {
           </p>
         </div>
 
-        {selectedUserData?.isGroup && <div>extra grp details</div>}
+        {selectedUserData?.isGroup && (
+          <div
+            onClick={() => document.getElementById('group_modal').showModal()}
+          >
+            <Pencil />
+          </div>
+        )}
       </div>
+      <EditGroupSection />
     </div>
   )
 }

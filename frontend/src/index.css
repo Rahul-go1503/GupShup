@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.drawer-toggle:checked ~ .drawer-side > .drawer-overlay {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+/*  for selection */
+::selection {
+  color: oklch(var(--pc));
+  background: oklch(var(--p));
+}
+
+* {
+  scrollbar-width: none;
+  /* scrollbar-color: oklch(var(--s)) oklch(var(--p)) !important; */
+}
+
+/* ::-webkit-scrollbar-track {
+  background: oklch(var(--p));
+} */
+
+/* ::-webkit-scrollbar-thumb {
+  background-color: oklch(var(--s));
+} */
