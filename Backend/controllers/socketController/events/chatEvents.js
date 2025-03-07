@@ -1,13 +1,14 @@
 import Contact from "../../../models/Contact.js";
 import Message from "../../../models/Message.js";
 import User from "../../../models/User.js";
+import { generateFileURL } from "../../../utils/generateFileURL.js";
 import { strToObjId } from "../../../utils/strToObjId.js";
 
 
 export const handleChatEvents = (io, socket) => {
     const { _id: userId, firstName: userName } = socket.handshake.auth
-    // Todo: fetch from the userInfo
-    const profile = null
+    // Todo: fetch from the userInfo -> done
+    // const profile = null
     socket.on('newChat', async (data1, callback) => {
         try {
             const { message, id } = data1
@@ -17,7 +18,7 @@ export const handleChatEvents = (io, socket) => {
 
             // creating new contact for chat
             const newContact = new Contact({
-                members: [{ userId: userId }, { userId: receiverUserId }]
+                members: [{ userId: userId, unReadMessageCount: 0 }, { userId: receiverUserId, unReadMessageCount: 1 }]
             })
             await newContact.save()
             // update contact id for the client who created new chat
@@ -29,7 +30,7 @@ export const handleChatEvents = (io, socket) => {
                 contactId: newContact._id,
                 receiverIds: [
                     { userId: userId, sendAt: currentTimestamp },
-                    { userId: receiverUserId, sendAt: currentTimestamp }
+                    { userId: receiverUserId, sendAt: currentTimestamp, unReadMessageCount: 1 }
                 ],
                 message
             })
@@ -43,26 +44,29 @@ export const handleChatEvents = (io, socket) => {
                 isGroup: false,
                 latestMessage: message,
                 latestMessageAt: currentTimestamp,
-                unReadMessageCount: 0
+                // unReadMessageCount: 0
             }
             //To Sender
             const receiver = await User.findById(receiverUserId).select('_id firstName profile')
             const chatData1 = {
                 ...chatData,
                 name: receiver.firstName,
-                profile: receiver.profileImg,
-                userId: receiver._id
+                profile: await generateFileURL(receiver.profile),
+                userId: receiver._id,
+                unReadMessageCount: 0
             }
             io.to(userId).emit('newChat', chatData1)
             // To receiver
+            const sender = await User.findById(userId).select('_id firstName profile')
             const chatData2 = {
                 ...chatData,
-                name: userName,
-                profile: profile,
-                userId: userId
+                name: sender.firstName,
+                profile: await generateFileURL(sender.profile),
+                userId: sender._id,
+                unReadMessageCount: 1
             }
             io.to(id).emit('newChat', chatData2)
-            const data = { senderId: userId, senderName: userName, message, messageType: newMessage.messageTye, contactId: newMessage._id, createdAt: newMessage.createdAt }
+            const data = { senderId: userId, senderName: userName, message, messageType: newMessage.messageType, contactId: newMessage._id, createdAt: newMessage.createdAt }
             io.to(id).emit('receiveMessage', data)
         }
         catch (err) {

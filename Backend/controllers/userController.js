@@ -282,27 +282,26 @@ export const searchContacts = async (req, res, next) => {
         }
         const sanitizedSearchTerm = searchTerm.replace(/[.*+?^${}()\[\]\\]/g, "\\$&");
         const regex = new RegExp(sanitizedSearchTerm, "i");
-        const contacts = await User.aggregate([
+        const users = await User.find(
             {
-                $match: {
-                    $and: [
-                        { _id: { $ne: userId } },
-                        {
-                            $or: [{ firstName: regex }, { lastName: regex }, { email: regex }]
-                        }]
-                }
+                _id: { $ne: userId },
+                $or: [
+                    { firstName: regex },
+                    { lastName: regex },
+                    { email: regex }
+                ]
             },
-            {
-                $project: {
-                    _id: null,
-                    name: '$firstName',
-                    isGroup: 'false',
-                    userId: '$_id',
-                    status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
-                    profile: '$profile'
-                }
-            }
-        ])
+            { firstName: 1, profile: 1 } // Selecting only required fields
+        );
+        const contacts = await Promise.all(users.map(async (user) => ({
+            name: user.firstName,
+            isGroup: false,
+            userId: user._id,
+            status: userSocketMap.get(user._id.toString()) ? 'Online' : 'Offline',
+            profile: await generateFileURL(user.profile) // Generating the signed URL
+        })));
+
+        // console.log(contacts)
 
 
         res.status(200).json(contacts)
