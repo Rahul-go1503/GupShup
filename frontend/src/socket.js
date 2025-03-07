@@ -1,13 +1,13 @@
 import { io } from "socket.io-client";
 import { useAppStore } from "./store";
 import { toast } from "sonner";
-// import { HOST } from "./utils/constants";
+import { HOST } from "./utils/constants";
 
 
 const connectSocket = () => {
   const { userInfo } = useAppStore.getState()
   // console.log(userInfo)
-  const socket = io('http://localhost:5000/', {
+  const socket = io(HOST, {
     autoConnect: false,
     auth: userInfo,
     withCredentials: true
