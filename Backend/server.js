@@ -24,8 +24,9 @@ app.use(cookieParser())
 app.use(reqLogger)
 
 // Check: CORS and credientials
+const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || [];
 const corsOptions = {
-  origin: `${process.env.ORIGIN}`,
+  origin: allowedOrigins,
   // origin: 'http://localhost:5173',
   credentials: true, // Allow cookies and credentials
 }
