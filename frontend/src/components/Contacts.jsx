@@ -1,6 +1,6 @@
 import { Search, SquarePen } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
-import ContactCard from './contactCard'
+import ContactCard from './ContactCard'
 import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
 import CreateGroup from './CreateGroup'
