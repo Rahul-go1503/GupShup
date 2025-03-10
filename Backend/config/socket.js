@@ -6,9 +6,10 @@ import { registerSocketHandlers } from '../controllers/socketController/register
 
 const app = express();
 const server = createServer(app)
+const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || [];
 const io = new Server(server, {
   cors: {
-    origin: `${process.env.ORIGIN}`,
+    origin: allowedOrigins,
     // origin: 'http://localhost:5173',
     credentials: true
   }
