@@ -18,7 +18,9 @@ const Header = () => {
                   <img
                     src={
                       userInfo.profile ||
-                      'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                      'https://ui-avatars.com/api/?name=' +
+                        userInfo.name.split(' ').join('+') +
+                        '&background=random&color=fff'
                     }
                     alt={userInfo.firstName}
                   />
