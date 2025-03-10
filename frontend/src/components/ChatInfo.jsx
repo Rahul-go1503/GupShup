@@ -19,7 +19,9 @@ const ChatInfo = () => {
                     <img
                       src={
                         selectedUserData?.profile ||
-                        'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                        'https://ui-avatars.com/api/?name=' +
+                          selectedUserData.name.split(' ').join('+') +
+                          '&background=random&color=fff'
                       }
                       alt="User Avatar"
                     />

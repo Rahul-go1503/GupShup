@@ -16,11 +16,13 @@ const ContactCard = ({ user }) => {
     >
       {/* Avatar Section */}
       <div className="avatar col-span-2">
-        <div className="h-12 w-12 rounded-full ring-1 ring-primary">
+        <div className="h-12 w-12 rounded-full">
           <img
             src={
               user.profile ||
-              'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+              'https://ui-avatars.com/api/?name=' +
+                user.name.split(' ').join('+') +
+                '&background=random&color=fff'
             }
             alt={user.name}
           />
