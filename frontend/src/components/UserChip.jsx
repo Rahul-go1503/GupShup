@@ -3,11 +3,11 @@ import React from 'react'
 
 const UserChip = ({ data, funHandleRemove }) => {
   return (
-    <div className="badge badge-lg flex min-h-3 items-center justify-center gap-1 bg-primary">
-      <span>{data}</span>
-      <span onClick={funHandleRemove}>
+    <div className="flex items-center gap-2 rounded-full bg-primary px-3 py-1">
+      <span className="text-sm font-medium">{data}</span>
+      <button onClick={funHandleRemove} className="rounded-full p-1">
         <X size={16} />
-      </span>
+      </button>
     </div>
   )
 }

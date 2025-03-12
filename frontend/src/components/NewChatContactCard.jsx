@@ -13,7 +13,7 @@ const NewChatContactCard = ({ user }) => {
   return (
     <>
       <div
-        className="flex h-16 items-center gap-2 rounded-sm hover:bg-base-200"
+        className="flex h-16 items-center gap-2 rounded-sm p-2 hover:bg-base-200"
         onClick={() => newChatHandler()}
       >
         <div className="avatar my-auto">

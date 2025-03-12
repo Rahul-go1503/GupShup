@@ -5,8 +5,14 @@ import { toast } from "sonner"
 export const createNewGroup = async (data) => {
     try {
         const { socket } = useAppStore.getState()
-        socket.emit('newGroup', data, (err) => {
-            throw new Error('Something Went Wrong', err)
+        socket.emit('newGroup', data, (status, err) => {
+            console.log(status, err)
+            if (status == 'ok') {
+                toast.success('Group Created')
+            }
+            else {
+                throw new Error('Something Went Wrong', err)
+            }
         })
     }
     catch (err) {
