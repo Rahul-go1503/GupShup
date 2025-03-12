@@ -34,8 +34,8 @@ const Contacts = () => {
   return isUserLoading ? (
     'loading...'
   ) : (
-    <div className="col-span-3 row-span-11 grid grid-cols-1 grid-rows-12 border-r-2 border-r-neutral px-2">
-      <div className="row-span-1 m-2 flex items-center justify-between p-2">
+    <div className="col-span-3 row-span-11 flex flex-col border-r-2 border-r-neutral px-2">
+      <div className="flex items-center justify-between px-2">
         <p className="font-bold">Chats</p>
         <div className="flex items-center gap-1">
           <NewChat />
@@ -53,7 +53,7 @@ const Contacts = () => {
           </div>
         </div>
       </div>
-      <div className="row-span-1 m-2 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+      <div className="mb-2 flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
         <div className="text-muted self-auto">
           <Search size={20} />
         </div>
@@ -67,7 +67,7 @@ const Contacts = () => {
           }}
         />
       </div>
-      <div className="row-span-10 m-2">
+      <div className="">
         <ScrollArea className="h-full">
           {filteredContacts.map((contact, index) => (
             <ContactCard key={index} user={contact} />

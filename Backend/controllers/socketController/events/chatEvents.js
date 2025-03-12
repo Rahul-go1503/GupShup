@@ -137,6 +137,8 @@ export const handleChatEvents = (io, socket) => {
                 profile: profileUrl,
                 isGroup: true,
                 name: newGroup.name,
+                latestMessage: newMessage.message,
+                latestMessageAt: currentTimestamp,
                 unReadMessageCount: 0
             }
             // console.log(resData)
@@ -148,11 +150,11 @@ export const handleChatEvents = (io, socket) => {
                 // console.log('newGroup Event handler', newGroup)
                 io.to(receiverRoom).emit('newGroup', { group: { ...resData, isAdmin: member.isAdmin } })
             }
-            // callback({ group: { ...newGroup._doc, latestMessageAt: newGroup.createdAt } })
+            callback('ok')
         }
         catch (err) {
             console.log(err)
-            callback({ error: err.message })
+            callback('error', err)
         }
     })
 

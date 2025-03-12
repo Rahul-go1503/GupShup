@@ -152,10 +152,11 @@ export const getAllContacts = async (req, res, next) => {
                     name: contact.name,
                     profile: await generateFileURL(contact.profile),
                     latestMessage: contact.latestMessage[0]?.message,
-                    latestMessgeSender: contact.latestMessageSender[0]?.firstName,
+                    latestMessageSender: contact.latestMessageSender[0]?.firstName,
                     latestMessageAt: contact.latestMessage[0]?.createdAt,
                     unReadMessageCount: contact.members[0].unReadMessageCount || 0,
-                    isAdmin: contact.members[0].isAdmin
+                    isAdmin: contact.members[0].isAdmin,
+                    isNotification: contact.latestMessage[0]?.isNotification
                 })
             }
             else {
@@ -166,7 +167,7 @@ export const getAllContacts = async (req, res, next) => {
                     name: contact.users.find(member => !member._id.equals(userId))?.firstName,
                     profile: await generateFileURL(contact.users.find(member => !member._id.equals(userId))?.profile),
                     latestMessage: contact.latestMessage[0]?.message,
-                    latestMessgeSender: contact.latestMessageSender[0]?.firstName,
+                    latestMessageSender: contact.latestMessageSender[0]?.firstName,
                     latestMessageAt: contact.latestMessage[0]?.createdAt,
                     // status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
                     unReadMessageCount: contact.members.find(member => member.userId.equals(userId))?.unReadMessageCount || 0,
