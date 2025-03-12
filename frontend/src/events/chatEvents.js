@@ -6,7 +6,7 @@ export const createNewGroup = async (data) => {
     try {
         const { socket } = useAppStore.getState()
         socket.emit('newGroup', data, (err) => {
-            throw new Error('Something Went Wrong')
+            throw new Error('Something Went Wrong', err)
         })
     }
     catch (err) {

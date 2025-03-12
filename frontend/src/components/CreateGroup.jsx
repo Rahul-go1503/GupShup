@@ -9,6 +9,8 @@ import { createNewGroup } from '@/events/chatEvents'
 
 const CreateGroup = () => {
   /***** States*****/
+  const [groupProfile, setGroupProfile] = useState()
+  const [groupProfileData, setGroupProfileData] = useState()
   const [groupName, setGroupName] = useState('')
   const [description, setDescription] = useState('')
   const [query, setQuery] = useState('')
@@ -34,6 +36,7 @@ const CreateGroup = () => {
       setMembers(allUsers.current)
       setChipCount(0)
       setStep(0)
+      setGroupProfile(null)
     }, 1000)
   }
 
@@ -85,13 +88,14 @@ const CreateGroup = () => {
   }
   const handleSubmit = (e) => {
     e.preventDefault()
-    // createNewGroup({
-    //   groupName,
-    //   description,
-    //   members: members
-    //     .filter((member) => member.selected)
-    //     .map((member) => member.userId),
-    // })
+    createNewGroup({
+      groupProfileData,
+      groupName,
+      description,
+      members: members
+        .filter((member) => member.selected)
+        .map((member) => member.userId),
+    })
     closeDropdown()
     resetState()
   }
@@ -99,18 +103,18 @@ const CreateGroup = () => {
   //Todo: check for firefox
   // Handle image upload
   const handleImageUpload = (e) => {
-    // console.log('picker opened')
     const file = e.target.files[0]
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setProfileData({ ...profileData, profile: reader.result })
+        setGroupProfile(reader.result)
+        const fileBase64 = reader.result.split(',')[1] // Remove Base64 prefix
+        setGroupProfileData({
+          file: fileBase64,
+          fileType: file.type,
+        })
       }
       reader.readAsDataURL(file)
-      // console.log(file)
-      //   uploadProfileImage(file)
-      // setProfileData({ ...profileData, fileKey: key })
-      // upload
     }
   }
 
@@ -200,7 +204,8 @@ const CreateGroup = () => {
               >
                 <img
                   src={
-                    'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                    groupProfile ||
+                    'https://ui-avatars.com/api/?name=Group&color=fff'
                   }
                   alt="Group Profile"
                   className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"

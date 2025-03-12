@@ -36,12 +36,12 @@ const connectSocket = () => {
   })
 
   socket.on('newGroup', (data) => {
-    console.log('newGroup Event handler', data)
+    // console.log('newGroup Event handler', data)
     try {
       const { users, setUsers } = useAppStore.getState()
       setUsers([data.group, ...users])
       console.log(data)
-      toast.success('Group Created')
+      // toast.success('Group Created')
     }
     catch (err) {
       console.log(err)

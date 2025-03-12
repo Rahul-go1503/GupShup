@@ -1,7 +1,7 @@
 import Contact from "../../../models/Contact.js";
 import Message from "../../../models/Message.js";
 import User from "../../../models/User.js";
-import { generateFileURL } from "../../../utils/generateFileURL.js";
+import { generateFileURL, uploadToS3 } from "../../../utils/generateFileURL.js";
 import { strToObjId } from "../../../utils/strToObjId.js";
 
 
@@ -77,11 +77,13 @@ export const handleChatEvents = (io, socket) => {
 
     socket.on('newGroup', async (data, callback) => {
         try {
-            const { groupName, description, members } = data
-            // console.log(req.body)
+            const { groupProfileData, groupName, description, members } = data
+            // console.log(data)
             // const Admin = socket.handshake.query.userId
             // const AdminName = socket.handshake.query.userName
+
             const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
+
             const groupMembers = []
             let receiverIds = []
             receiverIds.push({ userId, seenAt: currentTimestamp })
@@ -110,6 +112,12 @@ export const handleChatEvents = (io, socket) => {
             })
             await newGroup.save()
 
+            // Upload to S3
+            const buffer = Buffer.from(groupProfileData.file, "base64"); // Convert base64 to buffer
+            const profileKey = `uploads/profiles/${newGroup._id}`
+            const profileUrl = await uploadToS3(buffer, profileKey, groupProfileData.fileType);
+            // console.log(profileUrl)
+
             const newMessage = new Message({
                 senderId: userId,
                 receiverIds,
@@ -121,16 +129,17 @@ export const handleChatEvents = (io, socket) => {
             await newMessage.save()
 
             newGroup.latestMessageId = newMessage._id
+            newGroup.profile = profileKey
             await newGroup.save()
-            // console.log('new Group data:', newGroup.members)
 
             const resData = {
                 _id: newGroup._id,
+                profile: profileUrl,
                 isGroup: true,
                 name: newGroup.name,
-                profile: newGroup.profile,
                 unReadMessageCount: 0
             }
+            // console.log(resData)
             for (const member of newGroup.members) {
                 // const receiverSocket = userSocketMap.get(member.userId.toString())
                 const receiverRoom = member.userId.toString()
