@@ -8,6 +8,7 @@ import {
 import Home from './pages/Home'
 import Chat from './pages/Chat'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 // Todo: change - page
 import SignUp from './components/Signup'
@@ -40,6 +41,7 @@ function App() {
         </Router>
       </div>
       <Analytics />
+      <SpeedInsights />
     </>
   )
 }
