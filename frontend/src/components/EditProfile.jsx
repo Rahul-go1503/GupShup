@@ -108,7 +108,9 @@ const EditProfileSection = () => {
             <img
               src={
                 profileData.profile ||
-                'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                'https://ui-avatars.com/api/?name=' +
+                  profileData.firstName.split(' ').join('+') +
+                  '&background=random&color=fff'
               }
               alt="Profile"
               className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"
@@ -147,7 +149,7 @@ const EditProfileSection = () => {
               <input
                 ref={nameRef}
                 type="text"
-                placeholder="Search or start a new chat"
+                placeholder="Enter name"
                 name="firstName"
                 className="me-2 w-full rounded bg-transparent outline-none"
                 value={profileData.firstName}
@@ -165,6 +167,7 @@ const EditProfileSection = () => {
               </div>
               <input
                 type="email"
+                placeholder="Enter email"
                 name="email"
                 className="me-2 w-full rounded bg-transparent outline-none"
                 value={profileData.email}
