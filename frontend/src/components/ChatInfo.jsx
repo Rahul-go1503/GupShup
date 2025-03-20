@@ -1,8 +1,8 @@
 import { useAppStore } from '@/store'
 import { Phone, Video } from 'lucide-react'
 import React from 'react'
-import GroupChatDetailsModal from './Modals/groupChatDetailsModal'
-import PrivateChatDetailsModal from './Modals/privateChatDetailsModal'
+import GroupChatDetailsModal from './Modals/GroupChatDetailsModal'
+import PrivateChatDetailsModal from './Modals/PrivateChatDetailsModal'
 
 const ChatInfo = () => {
   const { selectedUserData } = useAppStore()
