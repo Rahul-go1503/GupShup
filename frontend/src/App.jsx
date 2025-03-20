@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import Home from './pages/Home'
 import Chat from './pages/Chat'
+import { Analytics } from '@vercel/analytics/react'
 
 // Todo: change - page
 import SignUp from './components/Signup'
@@ -23,20 +24,23 @@ function App() {
 
   if (isCheckingAuth) return <p>loading...</p>
   return (
-    <div data-theme={theme}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route element={<AuthRoutes />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-          </Route>
-          <Route element={<PrivateRoutes />}>
-            <Route path="/chat" element={<Chat />} />
-          </Route>
-        </Routes>
-      </Router>
-    </div>
+    <>
+      <div data-theme={theme}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route element={<AuthRoutes />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+            </Route>
+            <Route element={<PrivateRoutes />}>
+              <Route path="/chat" element={<Chat />} />
+            </Route>
+          </Routes>
+        </Router>
+      </div>
+      <Analytics />
+    </>
   )
 }
 
