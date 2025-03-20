@@ -46,3 +46,21 @@ export const deleteFile = async (fileKey, next) => {
         // return { success: false, message: 'Error deleting file', error };
     }
 }
+
+export const uploadToS3 = async (fileBuffer, fileKey, fileType) => {
+    try {
+        const params = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: fileKey,
+            Body: fileBuffer,
+            ContentType: fileType,
+        };
+
+        await s3Client.send(new PutObjectCommand(params));
+        // return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+        return await generateFileURL(fileKey)
+    } catch (error) {
+        console.error("Error uploading file:", error);
+        throw new Error("Upload failed");
+    }
+};

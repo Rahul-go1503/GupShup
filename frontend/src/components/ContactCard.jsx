@@ -11,7 +11,7 @@ const ContactCard = ({ user }) => {
 
   return (
     <div
-      className={`grid w-full cursor-pointer grid-cols-12 grid-rows-1 items-center justify-between rounded-lg p-2 transition-all ${selectedUserData?._id === user._id ? 'bg-primary/10' : 'hover:bg-primary/5'}`}
+      className={`grid w-full cursor-pointer grid-cols-12 items-center gap-2 rounded-lg p-2 py-2 transition-all ${selectedUserData?._id === user._id ? 'bg-primary/10' : 'hover:bg-primary/5'}`}
       onClick={contactClickHandler}
     >
       {/* Avatar Section */}
@@ -30,24 +30,26 @@ const ContactCard = ({ user }) => {
       </div>
 
       {/* Contact Info Section */}
-      <div className="col-span-9">
-        <p className="w-5/6 truncate font-medium">{user.name}</p>
-        <p className="w-5/6 truncate text-sm">
-          {user.latestMessage || 'No messages yet'}
+      <div className="col-span-7">
+        <p className="truncate font-medium">{user.name}</p>
+        <p className="truncate text-sm">
+          {(user.isGroup && !user.isNotification
+            ? user.latestMessageSender + ':'
+            : '') + user.latestMessage || 'No messages yet'}
         </p>
       </div>
 
       {/* Status and Time Section */}
-      <div className="col-span-1 flex flex-col items-end gap-1">
+      <div className="col-span-3 flex flex-col items-end gap-1 place-self-start justify-self-end">
+        {user.latestMessageAt && (
+          <span className="text-xs">
+            {formatLastMessageTime(user.latestMessageAt)}
+          </span>
+        )}
         {user.unReadMessageCount > 0 && (
           <div className="badge badge-primary px-2 py-1 text-xs">
             {user.unReadMessageCount}
           </div>
-        )}
-        {user.latestMessageAt && (
-          <p className="text-xs">
-            {formatLastMessageTime(user.latestMessageAt)}
-          </p>
         )}
       </div>
     </div>

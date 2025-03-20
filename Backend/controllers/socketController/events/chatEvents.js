@@ -1,7 +1,7 @@
 import Contact from "../../../models/Contact.js";
 import Message from "../../../models/Message.js";
 import User from "../../../models/User.js";
-import { generateFileURL } from "../../../utils/generateFileURL.js";
+import { generateFileURL, uploadToS3 } from "../../../utils/generateFileURL.js";
 import { strToObjId } from "../../../utils/strToObjId.js";
 
 
@@ -77,11 +77,13 @@ export const handleChatEvents = (io, socket) => {
 
     socket.on('newGroup', async (data, callback) => {
         try {
-            const { groupName, description, members } = data
-            // console.log(req.body)
+            const { groupProfileData, groupName, description, members } = data
+            // console.log(data)
             // const Admin = socket.handshake.query.userId
             // const AdminName = socket.handshake.query.userName
+
             const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
+
             const groupMembers = []
             let receiverIds = []
             receiverIds.push({ userId, seenAt: currentTimestamp })
@@ -110,6 +112,16 @@ export const handleChatEvents = (io, socket) => {
             })
             await newGroup.save()
 
+            // Upload to S3
+            let profileUrl = null
+            if (groupProfileData) {
+                const buffer = Buffer.from(groupProfileData.file, "base64"); // Convert base64 to buffer
+                const profileKey = `uploads/profiles/${newGroup._id}`
+                profileUrl = await uploadToS3(buffer, profileKey, groupProfileData.fileType);
+                newGroup.profile = profileKey
+            }
+            // console.log(profileUrl)
+
             const newMessage = new Message({
                 senderId: userId,
                 receiverIds,
@@ -122,15 +134,18 @@ export const handleChatEvents = (io, socket) => {
 
             newGroup.latestMessageId = newMessage._id
             await newGroup.save()
-            // console.log('new Group data:', newGroup.members)
 
             const resData = {
                 _id: newGroup._id,
+                profile: profileUrl,
                 isGroup: true,
                 name: newGroup.name,
-                profile: newGroup.profile,
-                unReadMessageCount: 0
+                latestMessage: newMessage.message,
+                latestMessageAt: currentTimestamp,
+                unReadMessageCount: 0,
+                isNotification: true
             }
+            // console.log(resData)
             for (const member of newGroup.members) {
                 // const receiverSocket = userSocketMap.get(member.userId.toString())
                 const receiverRoom = member.userId.toString()
@@ -139,11 +154,11 @@ export const handleChatEvents = (io, socket) => {
                 // console.log('newGroup Event handler', newGroup)
                 io.to(receiverRoom).emit('newGroup', { group: { ...resData, isAdmin: member.isAdmin } })
             }
-            // callback({ group: { ...newGroup._doc, latestMessageAt: newGroup.createdAt } })
+            callback('ok')
         }
         catch (err) {
             console.log(err)
-            callback({ error: err.message })
+            callback('error', err)
         }
     })
 

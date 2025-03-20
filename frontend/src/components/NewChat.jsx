@@ -66,13 +66,13 @@ const NewChat = () => {
       >
         <div>
           <p className="my-2 text-lg font-semibold">New Chat</p>
-          <div className="row-span-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
+          <div className="flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
             <div className="text-muted self-auto">
               <Search size={20} />
             </div>
             <input
               type="text"
-              placeholder="Search or start a new chat"
+              placeholder="Search user name or email"
               className="w-full rounded bg-transparent outline-none"
               value={query}
               onChange={(e) => searchUsers(e.target.value)}
