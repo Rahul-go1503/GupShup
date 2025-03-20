@@ -1,17 +1,29 @@
 import { useAppStore } from '@/store'
 import { Phone, Video } from 'lucide-react'
 import React from 'react'
-import ChatDetails from './ChatDetails'
+import GroupChatDetailsModal from './Modals/groupChatDetailsModal'
+import PrivateChatDetailsModal from './Modals/privateChatDetailsModal'
 
 const ChatInfo = () => {
   const { selectedUserData } = useAppStore()
 
+  const handleChatDetailsModal = () => {
+    let modal = document.getElementById('privateChatDetailsModal')
+    if (selectedUserData?.isGroup) {
+      modal = document.getElementById('groupChatDetailsModal')
+    }
+    modal.showModal()
+  }
   return (
-    <div className="row-span-1 p-1 shadow-sm">
-      <div className="m-auto flex items-center justify-between self-center">
-        {/* User Info Section */}
-        <div className="flex items-center space-x-4">
-          <div className="dropdown dropdown-right">
+    <>
+      <div className="row-span-1 p-1 shadow-sm">
+        <div className="m-auto flex items-center justify-between self-center">
+          {/* User Info Section */}
+          <div
+            className="flex items-center space-x-4"
+            onClick={handleChatDetailsModal}
+          >
+            {/* <div className="dropdown dropdown-right"> */}
             <div tabIndex={0} className="cursor-pointer">
               <div className="flex items-center space-x-2">
                 <div className="avatar">
@@ -34,21 +46,23 @@ const ChatInfo = () => {
                 </div>
               </div>
             </div>
-            <ChatDetails />
+          </div>
+
+          {/* Actions Section */}
+          <div className="flex items-center space-x-4">
+            <button className="hover:bg-primary-focus btn rounded-sm p-2 shadow">
+              <Video className="h-6 w-6" />
+            </button>
+            <button className="hover:bg-primary-focus btn p-2 shadow">
+              <Phone className="h-6 w-6" />
+            </button>
           </div>
         </div>
-
-        {/* Actions Section */}
-        <div className="flex items-center space-x-4">
-          <button className="hover:bg-primary-focus btn rounded-sm p-2 shadow">
-            <Video className="h-6 w-6" />
-          </button>
-          <button className="hover:bg-primary-focus btn p-2 shadow">
-            <Phone className="h-6 w-6" />
-          </button>
-        </div>
+        {/* <EditGroupSection /> */}
       </div>
-    </div>
+      <PrivateChatDetailsModal />
+      <GroupChatDetailsModal />
+    </>
   )
 }
 

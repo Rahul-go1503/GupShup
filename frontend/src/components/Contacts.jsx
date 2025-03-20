@@ -67,8 +67,8 @@ const Contacts = () => {
           }}
         />
       </div>
-      <div className="">
-        <ScrollArea className="h-full">
+      <div className="overflow-y-auto">
+        <ScrollArea className="">
           {filteredContacts.map((contact, index) => (
             <ContactCard key={index} user={contact} />
           ))}

@@ -113,9 +113,13 @@ export const handleChatEvents = (io, socket) => {
             await newGroup.save()
 
             // Upload to S3
-            const buffer = Buffer.from(groupProfileData.file, "base64"); // Convert base64 to buffer
-            const profileKey = `uploads/profiles/${newGroup._id}`
-            const profileUrl = await uploadToS3(buffer, profileKey, groupProfileData.fileType);
+            let profileUrl = null
+            if (groupProfileData) {
+                const buffer = Buffer.from(groupProfileData.file, "base64"); // Convert base64 to buffer
+                const profileKey = `uploads/profiles/${newGroup._id}`
+                profileUrl = await uploadToS3(buffer, profileKey, groupProfileData.fileType);
+                newGroup.profile = profileKey
+            }
             // console.log(profileUrl)
 
             const newMessage = new Message({
@@ -129,7 +133,6 @@ export const handleChatEvents = (io, socket) => {
             await newMessage.save()
 
             newGroup.latestMessageId = newMessage._id
-            newGroup.profile = profileKey
             await newGroup.save()
 
             const resData = {
@@ -139,7 +142,8 @@ export const handleChatEvents = (io, socket) => {
                 name: newGroup.name,
                 latestMessage: newMessage.message,
                 latestMessageAt: currentTimestamp,
-                unReadMessageCount: 0
+                unReadMessageCount: 0,
+                isNotification: true
             }
             // console.log(resData)
             for (const member of newGroup.members) {

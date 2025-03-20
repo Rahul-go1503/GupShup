@@ -7,6 +7,7 @@ import UserChip from './UserChip'
 import { Button } from './ui/button'
 import { createNewGroup } from '@/events/chatEvents'
 import { toast } from 'sonner'
+import ConfirmModal from './ConfirmModal'
 
 const CreateGroup = () => {
   /***** States*****/
@@ -20,44 +21,20 @@ const CreateGroup = () => {
   const [members, setMembers] = useState([])
   // const [chipCount, setChipCount] = useState(0)
   const [step, setStep] = useState(0)
-
-  const { users, uploadProfileImage, removeProfileImage } = useAppStore()
-
-  const chipCount = useRef(0) // used to detect changes as well, useRef is used to prevent unnecessary event listener re-attaches
+  const { users } = useAppStore()
 
   /***** Refs *****/
   const allUsers = useRef([])
-  const dropdownRef = useRef(null)
+  const modalRef = useRef(null)
   const fileInputRef = useRef(null)
+  const chipCount = useRef(0) // used to detect changes as well, useRef is used to prevent unnecessary event listener re-attaches
 
-  const resetState = () => {
-    // to handle the animation flucution
-    setTimeout(() => {
-      setGroupName('')
-      setDescription('')
-      setQuery('')
-      setMembers(allUsers.current)
-      // setChipCount(0)
-      setStep(0)
-      setGroupProfile(null)
-      chipCount.current = 0
-    }, 10)
-  }
-
-  useEffect(() => {
-    const contacts = users?.filter((contact) => !contact.isGroup)
-    allUsers.current = contacts?.map((contact) => {
-      return { ...contact, selected: false }
-    })
-    // console.log(allUsers.current)
-    setMembers(allUsers.current)
-  }, [users])
-
+  /***** Effects *****/
   useEffect(() => {
     //   handle click outside close
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        console.log(chipCount.current)
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        // console.log(chipCount.current)
         if (chipCount.current > 0) {
           document.getElementById('confirm_modal').showModal()
         }
@@ -81,6 +58,16 @@ const CreateGroup = () => {
     }
   }, [])
 
+  useEffect(() => {
+    const contacts = users?.filter((contact) => !contact.isGroup)
+    allUsers.current = contacts?.map((contact) => {
+      return { ...contact, selected: false }
+    })
+    // console.log(allUsers.current)
+    setMembers(allUsers.current)
+  }, [users])
+  /***** Functions *****/
+
   const filteredContacts = useMemo(() => {
     return members.filter((member) =>
       member.name.toLowerCase().includes(query.toLowerCase())
@@ -98,24 +85,6 @@ const CreateGroup = () => {
         return member
       })
     )
-  }
-  const closeDropdown = () => {
-    if (dropdownRef.current) {
-      document.getElementById('createGroup_modal').close()
-    }
-  }
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    createNewGroup({
-      groupProfileData,
-      groupName,
-      description,
-      members: members
-        .filter((member) => member.selected)
-        .map((member) => member.userId),
-    })
-    closeDropdown()
-    resetState()
   }
 
   //Todo: check for firefox
@@ -136,18 +105,52 @@ const CreateGroup = () => {
     }
   }
 
+  const closeModal = () => {
+    if (modalRef.current) {
+      console.log(document.getElementById('createGroup_modal'))
+      document.getElementById('createGroup_modal').close()
+      console.log(document.getElementById('createGroup_modal'))
+    }
+  }
+
+  const resetState = () => {
+    // to handle the animation flucution
+    setTimeout(() => {
+      setGroupName('')
+      setDescription('')
+      setQuery('')
+      setMembers(allUsers.current)
+      // setChipCount(0)
+      setStep(0)
+      setGroupProfile(null)
+      chipCount.current = 0
+    }, 10)
+  }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    createNewGroup({
+      groupProfileData,
+      groupName,
+      description,
+      members: members
+        .filter((member) => member.selected)
+        .map((member) => member.userId),
+    })
+    closeModal()
+    resetState()
+  }
   const handleDiscardChanges = () => {
-    document.getElementById('confirm_modal').close()
-    closeDropdown()
+    closeModal()
     resetState()
   }
 
   return (
     <>
       <dialog id="createGroup_modal" className="modal">
-        <div className="modal-box" ref={dropdownRef}>
+        <div className="modal-box" ref={modalRef}>
           <h3 className="text-center font-bold">Create New Group</h3>
           <div className="relative overflow-hidden">
+            {/* Search contacts */}
             <div className="mb-1 flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
               <div className="text-muted self-auto">
                 <Search size={20} />
@@ -164,7 +167,7 @@ const CreateGroup = () => {
             </div>
 
             {/* selected member list */}
-            <ScrollArea className="my-1 w-full">
+            <ScrollArea className="overflow-x my-1">
               <div className="flex gap-1">
                 {members.map(
                   (member, index) =>
@@ -209,15 +212,13 @@ const CreateGroup = () => {
 
               {/* Back Button */}
               <div>
-                {
-                  <Button
-                    onClick={() => {
-                      setStep(0), setQuery('')
-                    }}
-                  >
-                    Back
-                  </Button>
-                }
+                <Button
+                  onClick={() => {
+                    setStep(0), setQuery('')
+                  }}
+                >
+                  Back
+                </Button>
               </div>
 
               {/* Group Profile Picture */}
@@ -293,23 +294,14 @@ const CreateGroup = () => {
         </form>
       </dialog>
       {/* Confirmation Modal */}
-      <dialog id="confirm_modal" className="modal">
-        <div className="modal-box w-1/4">
-          <h3 className="text-lg font-bold">Cancel Creating Group?</h3>
-          <p className="py-2">You have unsaved changes that will be lost</p>
-          <div className="mt-4 flex justify-end gap-3">
-            <Button onClick={handleDiscardChanges} className="w-1/2 bg-primary">
-              Yes, Cancel
-            </Button>
-            <Button
-              onClick={() => document.getElementById('confirm_modal').close()}
-              className="w-1/2 bg-base-300 hover:bg-base-200/90"
-            >
-              Go Back
-            </Button>
-          </div>
-        </div>
-      </dialog>
+      <ConfirmModal
+        id="confirm_modal"
+        Title="Cancel Creating Group?"
+        description="You have unsaved changes that will be lost"
+        actionText="Yes, Cancel"
+        funAction={handleDiscardChanges}
+        cancelText="Go Back"
+      />
     </>
   )
 }
