@@ -28,7 +28,7 @@ const Contacts = () => {
   const filteredContacts = useMemo(() => {
     return users.filter((contact) => {
       // console.log(contact.name, query)
-      return contact.name.toLowerCase().includes(query.toLowerCase())
+      return contact.name.toLowerCase().includes(query?.toLowerCase() || '')
     })
   }, [users, query])
   return isUserLoading ? (

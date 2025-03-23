@@ -53,6 +53,7 @@ app.use(errorHandler)
 // Start the Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
+  //Todo: change log message
   console.log(`Server is listening on http://localhost:${PORT}`);
 });
 

@@ -19,7 +19,7 @@ const Header = () => {
                     src={
                       userInfo.profile ||
                       'https://ui-avatars.com/api/?name=' +
-                        userInfo.name.split(' ').join('+') +
+                        userInfo.firstName.split(' ').join('+') +
                         '&background=random&color=fff'
                     }
                     alt={userInfo.firstName}

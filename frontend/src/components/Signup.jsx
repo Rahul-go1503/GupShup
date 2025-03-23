@@ -2,10 +2,9 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { axiosInstance } from '@/config/axios'
 import { toast } from 'sonner'
 import { Eye, EyeClosed } from 'lucide-react'
-import { SIGNUP_ROUTE } from '@/utils/constants'
+import { useAppStore } from '@/store'
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,6 +15,9 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
   })
+
+  const { signup, authLoading } = useAppStore()
+
   const navigate = useNavigate()
 
   const handleChange = (event) => {
@@ -57,19 +59,16 @@ const SignUp = () => {
     if (!validateInputs()) {
       return
     }
-    try {
-      // Check: with crediential
-      await axiosInstance.post(SIGNUP_ROUTE, inputs)
-      navigate('/login')
-      toast.success('User registered successfully!')
-    } catch (error) {
-      // const { status, statusText, data } = error.response
-      // console.error(`${status} - ${statusText} : ${data.message}`)
-      toast.error(error.response.data.message)
-    }
+    signup(inputs, navigate)
   }
 
   // Todo: show and hide password and more validation
+  if (authLoading)
+    return (
+      <div className="h-screen w-screen animate-pulse items-center text-xl font-semibold text-gray-700">
+        signing up...
+      </div>
+    )
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg p-8 shadow-lg">

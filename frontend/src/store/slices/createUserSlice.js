@@ -15,14 +15,14 @@ export const createUserSlice = (set, get) => ({
 
     setUsers: (data) => set({ users: data }),
     getAllUsers: async () => {
-        set({ isUserLoading: true })
         try {
+            set({ isUserLoading: true })
             const response = await axiosInstance.get(ALL_USER_ROUTE)
             // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
+            console.log(err)
+            toast.error(err.response.data.message)
         } finally {
             set({ isUserLoading: false })
         }
@@ -32,11 +32,11 @@ export const createUserSlice = (set, get) => ({
         try {
             set({ isUserLoading: true })
             const response = await axiosInstance.get(ALL_CONTACTS_ROUTE)
-            // console.log(response.data)
+            console.log(response.data)
             set({ users: response.data })
         } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
+            console.log(err)
+            toast.error(err.response.data.message)
         } finally {
             set({ isUserLoading: false })
         }

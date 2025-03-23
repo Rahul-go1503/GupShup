@@ -1,22 +1,64 @@
 import { axiosInstance } from "@/config/axios"
 import connectSocket from "@/socket"
-import { CHECK_AUTH_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE } from "@/utils/constants"
+import { CHECK_AUTH_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE, RESEND_VERIFICATION_LINK_ROUTE, SIGNUP_ROUTE, VERIFY_EMAIL_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
 
 const initialState = {
-    isLoginLoading: false,
+    authLoading: false,
     isCheckingAuth: true,   // very important to set as true
 
     userInfo: null,
     socket: null,
+    email: null
 }
+
 export const createAuthSlice = (set, get) => ({
     ...initialState,
+
+    signup: async (data, navigate) => {
+        try {
+            set({ authLoading: true })
+            await axiosInstance.post(SIGNUP_ROUTE, data)
+            toast.success('signup successful!')
+            set({ email: data.email })
+            navigate('/verify')
+        }
+        catch (err) {
+            console.log(err)
+            toast.error('Something went wrong', err.message)
+        }
+        finally {
+            set({ authLoading: false })
+        }
+    },
+
+    resendVerificationLink: async (email) => {
+        try {
+            const res = await axiosInstance.post(RESEND_VERIFICATION_LINK_ROUTE, email)
+            console.log(res)
+            return res?.data?.message
+        }
+        catch (err) {
+            console.log(err)
+            return err.response?.data.message || { message: "Something went wrong" }
+        }
+    },
+
+    verifyEmail: async (token, navigate) => {
+        try {
+            const response = await axiosInstance.get(`${VERIFY_EMAIL_ROUTE}/?token=${token}`);
+            setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
+            return `${response?.data.message}. Redirecting to login page...`;
+        } catch (error) {
+            console.log(error)
+            return error.response?.data.message || { message: "Something went wrong" };
+        }
+    },
     login: async (data) => {
         try {
             // console.log(data)
-            set({ isLoginLoading: true })
+            set({ authLoading: true })
             const res = await axiosInstance.post(LOGIN_ROUTE, data)
             set({ userInfo: res.data.user })
 
@@ -30,7 +72,7 @@ export const createAuthSlice = (set, get) => ({
             toast.success('User Login successfully!')
         } catch (err) {
             console.log(err)
-            toast.error('Something went wrong', err.message)
+            toast.error(err.response?.data.message)
         }
     },
 
