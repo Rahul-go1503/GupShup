@@ -14,7 +14,6 @@ import VerifyYourEmail from './pages/VerifyYourEmail'
 import NotFound from './pages/NotFound'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import LandingPage from './pages/Home2'
 
 function App() {
   // Todo: fetch userInfo on Refresh/ Rerender
