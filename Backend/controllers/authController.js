@@ -1,7 +1,8 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import { generateFileURL } from '../utils/generateFileURL.js';
-import { sendEmail } from '../config/awsSES.js';
+import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail } from './Email/emails.js';
+import crypto from "crypto";
 
 const cookieOptions = {
     httponly: true,
@@ -33,7 +34,8 @@ export const signupHandler = async (req, res, next) => {
         const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
         // Send email
-        await sendEmail(email, "Verify Your Email", `<a href="${verificationLink}">Click here to verify</a>`);
+        // console.log(verificationLink);
+        await sendVerificationEmail(email, verificationLink);
 
         res.status(200).json({ message: "Verification email sent. Please check your inbox." });
 
@@ -60,8 +62,8 @@ export const resendVerificationLinkHandler = async (req, res) => {
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
     // Send email
-    await sendEmail(email, "Verify Your Email", `<a href="${verificationLink}">Click here to verify</a>`);
-
+    // console.log(verificationLink);
+    await sendVerificationEmail(email, verificationLink);
     res.json({ message: "Verification email sent. Please check your inbox." });
 }
 export const verifyEmailHandler = async (req, res) => {
@@ -84,6 +86,53 @@ export const verifyEmailHandler = async (req, res) => {
         res.status(400).json({ message: "Invalid or expired link" });
     }
 };
+
+export const forgotPasswordHandler = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) return res.status(400).json({ message: "User not found" });
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour expiry
+        await user.save();
+
+        // Send email with reset link
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        // console.log(resetLink)
+        await sendPasswordResetEmail(email, resetToken)
+        // await sendEmail(email, "Reset Your Password", `Click here to reset: ${resetLink}`);
+
+        res.json({ message: "Reset link sent to email." });
+    }
+    catch (err) {
+        next(err)
+    }
+}
+
+export const resetPasswordHandler = async (req, res, next) => {
+    try {
+        const { token, newPassword } = req.body;
+        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+
+        if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+
+        // Update password
+        user.password = newPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        await sendResetSuccessEmail(user.email)
+        res.json({ message: "Password reset successful" });
+    }
+    catch (err) {
+        next(err)
+    }
+}
 const loginHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -98,7 +147,7 @@ const loginHandler = async (req, res, next) => {
             return res.status(401).json({ message: "Invalid Credentials" })
         }
         if (!user.isEmailVerified) {
-            return res.status(401).json({ message: "Email not verified" })
+            return res.status(403).json({ message: "Email not verified" })
         }
         const isPasswordMatch = await user.matchPassword(password);
         if (!isPasswordMatch) {

@@ -14,6 +14,8 @@ const UserSchema = new Schema({
     phone: { type: Number },
     country: { type: String, default: 'India' },
     isEmailVerified: { type: Boolean, default: false },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
 }, { timestamps: true }
 )
 
