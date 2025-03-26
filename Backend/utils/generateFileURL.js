@@ -1,7 +1,8 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import s3Client from "../config/s3Config.js";
-
+import { config } from 'dotenv'
+config()
 // Todo: rename the file name
 
 export const generatePresignedUrl = async (data) => {
@@ -22,12 +23,6 @@ export const generateFileURL = async (fileKey) => {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: fileKey,
     });
-    // console.log(s3Client)
-    // console.log("AWS Credentials:", {
-    //     region: process.env.AWS_REGION,
-    //     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    // });
     return await getSignedUrl(s3Client, command, { expiresIn: 24 * 60 * 60 }); // 1 day expiry
 }
 

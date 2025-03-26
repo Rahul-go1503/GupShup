@@ -9,7 +9,7 @@ export const useAppStore = create(devtools((set, get) => ({
   ...createAuthSlice(set, get),
   ...createChatSlice(set, get),
   ...createUserSlice(set, get),
-  theme: 'light',
+  theme: 'sunset',
   setTheme: (theme) => set({ theme }),
   resetStore: () => {
     createAuthSlice(set, get).reset()

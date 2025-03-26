@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Input } from './ui/input'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 import { useAppStore } from '@/store'
 import { toast } from 'sonner'
+import Input from './Input'
+import { KeyRound, Mail } from 'lucide-react'
 
 const Login = () => {
   const { login } = useAppStore()
   const [inputs, setInputs] = useState({ email: '', password: '' })
 
+  const navigate = useNavigate()
   const handleChange = (event) => {
     const name = event.target.name
     const value = event.target.value
@@ -39,9 +41,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateLogin()) return
-    login(inputs)
+    login(inputs, navigate)
   }
-
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg bg-base-200/50 p-8 shadow-lg">
@@ -52,13 +53,13 @@ const Login = () => {
               Email Address
             </label>
             <Input
+              icon={<Mail size={20} />}
               type="text"
               id="email"
               placeholder="Enter your email"
               name="email"
               value={inputs.email}
               onChange={handleChange}
-              // autoComplete="off"
             />
           </div>
           <div>
@@ -66,19 +67,42 @@ const Login = () => {
               Password
             </label>
             <Input
+              icon={<KeyRound size={20} />}
               type="password"
               id="password"
               placeholder="Enter your password"
               name="password"
               value={inputs.password}
               onChange={handleChange}
-              // autoComplete="off"
             />
           </div>
-          <Button className="mx-auto" type="submit">
+          <div className="flex justify-between text-sm">
+            <Link
+              to="/forgot-password"
+              className="text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <Button className="w-full text-primary-content" type="submit">
             Login
           </Button>
         </form>
+
+        {/* <div className="mt-6 flex items-center justify-center space-x-4">
+          <Button
+            className="flex w-full items-center justify-center gap-2 bg-red-600 text-white hover:bg-red-700"
+            onClick={() => handleSocialLogin('google')}
+          >
+            Login with Google
+          </Button>
+          <Button
+            className="flex w-full items-center justify-center gap-2 bg-gray-800 text-white hover:bg-gray-900"
+            onClick={() => handleSocialLogin('github')}
+          >
+            Login with GitHub
+          </Button>
+        </div> */}
 
         <p className="mt-6 text-center text-sm">
           Don’t have an account?{' '}

@@ -1,9 +1,8 @@
 import { Router } from 'express'
-import { createUser, deleteUser, getAllContacts, getAllUsers, getUserInfo, removeProfileImage, searchContacts, updateUserInfo, uploadProfileImage } from '../controllers/userController.js'
+import { deleteUser, getAllContacts, getAllUsers, getUserInfo, removeProfileImage, searchContacts, updateUserInfo, uploadProfileImage } from '../controllers/userController.js'
 import validateJWT from '../middlewares/validateJWT.js'
 const route = Router()
 
-route.post('/signup', createUser)
 
 route.use(validateJWT)
 route.get('/', getUserInfo)

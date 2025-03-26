@@ -141,7 +141,7 @@ const EditProfileSection = () => {
         {/* Profile Details */}
         <div className="mt-4 space-y-3">
           <div>
-            <label className="block text-gray-600">Name</label>
+            <label className="block">Name</label>
             <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
               <div className="text-muted self-auto">
                 <User size={20} />
@@ -160,7 +160,7 @@ const EditProfileSection = () => {
           </div>
 
           <div>
-            <label className="block text-gray-600">Email</label>
+            <label className="block">Email</label>
             <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
               <div className="text-muted self-auto">
                 <Mail size={20} />
@@ -172,7 +172,7 @@ const EditProfileSection = () => {
                 className="me-2 w-full rounded bg-transparent outline-none"
                 value={profileData.email}
                 onChange={handleChange}
-                disabled={!editMode}
+                disabled={true}
               />
             </div>
           </div>
@@ -182,12 +182,12 @@ const EditProfileSection = () => {
         <div className="mt-4 flex justify-center gap-3">
           {editMode ? (
             <>
-              <Button onClick={handleSave} className="">
+              <Button onClick={handleSave} className="text-primary-content">
                 Save
               </Button>
               <Button
                 onClick={() => setEditMode(false)}
-                className="bg-gray-500 text-white"
+                className="bg-base-200"
               >
                 Cancel
               </Button>

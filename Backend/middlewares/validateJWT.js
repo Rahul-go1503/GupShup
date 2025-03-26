@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken'
-import {config} from 'dotenv'
+import { config } from 'dotenv'
 
 config()
 const validateJWT = (req, res, next) => {
     const token = req.cookies.jwt
     // console.log(token)
-    if(!token){
-        return res.status(401).json({message : "No token, Authorization denied"})
+    if (!token) {
+        return res.status(401).json({ message: "No token, Authorization denied" })
     }
     // changeName: user to userId
     try {
@@ -15,7 +15,7 @@ const validateJWT = (req, res, next) => {
         // next()
     } catch (error) {
         // console.log(error)
-        res.status(403).json({message : "Invalid token", error: error.message})
+        return res.status(403).json({ message: "Invalid token", error: error.message })
     }
     next()
 }
