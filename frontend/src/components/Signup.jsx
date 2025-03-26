@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { Eye, EyeClosed } from 'lucide-react'
+import { Eye, EyeClosed, KeyRound, Mail, User } from 'lucide-react'
 import { useAppStore } from '@/store'
+import Input from './Input'
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -81,6 +81,7 @@ const SignUp = () => {
               Full Name
             </label>
             <Input
+              icon={<User size={20} />}
               type="text"
               placeholder="Enter your name"
               id="firstName"
@@ -95,6 +96,7 @@ const SignUp = () => {
               Email Address
             </label>
             <Input
+              icon={<Mail size={20} />}
               type="text"
               placeholder="Enter your email"
               id="email"
@@ -110,6 +112,7 @@ const SignUp = () => {
             </label>
             <div className="relative mt-1">
               <Input
+                icon={<KeyRound size={20} />}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Create a password"
                 id="password"
@@ -123,7 +126,7 @@ const SignUp = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-5 w-5 text-primary" />
                 ) : (
                   <EyeClosed className="h-5 w-5" />
                 )}
@@ -139,6 +142,7 @@ const SignUp = () => {
             </label>
             <div className="relative mt-1">
               <Input
+                icon={<KeyRound size={20} />}
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Re-enter your password"
                 id="confirmPassword"
@@ -152,14 +156,14 @@ const SignUp = () => {
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
               >
                 {showConfirmPassword ? (
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-5 w-5 text-primary" />
                 ) : (
                   <EyeClosed className="h-5 w-5" />
                 )}
               </div>
             </div>
           </div>
-          <Button type="submit" className="mx-auto">
+          <Button type="submit" className="mx-auto text-primary-content">
             Sign Up
           </Button>
         </form>
