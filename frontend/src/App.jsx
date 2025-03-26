@@ -12,6 +12,9 @@ import { AuthRoutes, PrivateRoutes } from './utils/protectedRoutes'
 import { useAppStore } from './store'
 import VerifyYourEmail from './pages/VerifyYourEmail'
 import NotFound from './pages/NotFound'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import LandingPage from './pages/Home2'
 
 function App() {
   // Todo: fetch userInfo on Refresh/ Rerender
@@ -31,6 +34,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/verify-email" element={<VerifyYourEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Route>
             <Route element={<PrivateRoutes />}>
               <Route path="/chat" element={<Chat />} />

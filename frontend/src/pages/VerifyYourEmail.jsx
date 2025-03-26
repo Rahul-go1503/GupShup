@@ -3,40 +3,33 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const VerifyYourEmail = () => {
-  const { email, verifyEmail, resendVerificationLink } = useAppStore()
+  const { email, verifyEmail, verifyEmailMessage, resendVerificationLink } =
+    useAppStore()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token')
-  const [message, setMessage] = useState()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (token) {
-      const verify = async () => {
-        const response = await verifyEmail(token, navigate)
-        // console.log(response)
-        setMessage(response)
-      }
-
-      verify()
+      verifyEmail(token, navigate)
     } else if (!email) {
       navigate('/')
     } else {
-      setMessage(`A verification link has been sent to ${email || ''}.`)
+      // setMessage(`A verification link has been sent to ${email || ''}.`)
     }
   }, [])
   const handleResend = async () => {
     setLoading(true)
-    const response = await resendVerificationLink(email)
-    console.log(response)
-    setMessage(response)
+    const response = await resendVerificationLink(email, navigate)
+    // console.log(response)
     setLoading(false)
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="rounded-lg p-6 text-center shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">{message}</h2>
+        <h2 className="mb-4 text-xl font-bold">{verifyEmailMessage}</h2>
         {!token && (
           <>
             <p className="">

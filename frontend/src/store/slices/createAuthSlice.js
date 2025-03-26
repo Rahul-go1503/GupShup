@@ -1,6 +1,6 @@
 import { axiosInstance } from "@/config/axios"
 import connectSocket from "@/socket"
-import { CHECK_AUTH_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE, RESEND_VERIFICATION_LINK_ROUTE, SIGNUP_ROUTE, VERIFY_EMAIL_ROUTE } from "@/utils/constants"
+import { CHECK_AUTH_ROUTE, FORGOT_PASSWORD_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE, RESEND_VERIFICATION_LINK_ROUTE, RESET_PASSWORD_ROUTE, SIGNUP_ROUTE, VERIFY_EMAIL_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
 
@@ -10,7 +10,8 @@ const initialState = {
 
     userInfo: null,
     socket: null,
-    email: null
+    email: null,
+    verifyEmailMessage: 'A verification link has been sent to your email. Please verify your email to continue.'
 }
 
 export const createAuthSlice = (set, get) => ({
@@ -21,27 +22,33 @@ export const createAuthSlice = (set, get) => ({
             set({ authLoading: true })
             await axiosInstance.post(SIGNUP_ROUTE, data)
             toast.success('signup successful!')
+            navigate('/verify-email')
             set({ email: data.email })
-            navigate('/verify')
         }
         catch (err) {
-            console.log(err)
-            toast.error('Something went wrong', err.message)
+            // console.log(err)
+            toast.error(err.response?.data.message)
         }
         finally {
             set({ authLoading: false })
         }
     },
 
-    resendVerificationLink: async (email) => {
+    resendVerificationLink: async (email, navigate) => {
         try {
-            const res = await axiosInstance.post(RESEND_VERIFICATION_LINK_ROUTE, email)
-            console.log(res)
-            return res?.data?.message
+            const res = await axiosInstance.post(RESEND_VERIFICATION_LINK_ROUTE, { email })
+            // console.log(res)
+            set({ verifyEmailMessage: res?.data?.message })
+            // return res?.data?.message
         }
         catch (err) {
-            console.log(err)
-            return err.response?.data.message || { message: "Something went wrong" }
+            // console.log(err)
+            if (err.response?.data.error == 'Email is already verified.') {
+                setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
+                set({ verifyEmailMessage: `${err.response?.data.error}. Redirecting to login page...` })
+            }
+            else set({ verifyEmailMessage: err.response?.data.error || "Something went wrong" })
+            // return err.response?.data.error || "Something went wrong"
         }
     },
 
@@ -49,13 +56,42 @@ export const createAuthSlice = (set, get) => ({
         try {
             const response = await axiosInstance.get(`${VERIFY_EMAIL_ROUTE}/?token=${token}`);
             setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
-            return `${response?.data.message}. Redirecting to login page...`;
+            set({ verifyEmailMessage: `${response?.data.message}. Redirecting to login page...` })
+            // return `${response?.data.message}. Redirecting to login page...`;
         } catch (error) {
-            console.log(error)
-            return error.response?.data.message || { message: "Something went wrong" };
+            // console.log(error)
+            set({ verifyEmailMessage: error.response?.data.message || "Something went wrong" })
+            // return error.response?.data.message || { message: "Something went wrong" };
         }
     },
-    login: async (data) => {
+
+    forgotPassword: async (email) => {
+        try {
+            set({ authLoading: true })
+            const response = await axiosInstance.post(FORGOT_PASSWORD_ROUTE, { email })
+            // console.log(response)
+            return response.data
+        }
+        catch (err) {
+            // console.error(err)
+            toast.error(err.response?.data.message)
+
+        }
+    },
+
+    resetPassword: async (token, newPassword) => {
+        try {
+            const response = await axiosInstance.post(RESET_PASSWORD_ROUTE, { token, newPassword });
+            // console.log(response)
+            return response.data;
+        } catch (error) {
+            // console.error(error)
+            toast.error(error.response?.data.message)
+            return error.response?.data || { message: "Something went wrong" };
+
+        }
+    },
+    login: async (data, navigate) => {
         try {
             // console.log(data)
             set({ authLoading: true })
@@ -64,15 +100,20 @@ export const createAuthSlice = (set, get) => ({
 
             //Check: userId
             const { _id: userId, firstName: userName } = res.data.user
-            console.log('userId : ', userId, 'userName : ', userName)
+            // console.log('userId : ', userId, 'userName : ', userName)
             const socket = connectSocket()
             // console.log(socket)
             set({ socket })
             // get().connectSocket()
             toast.success('User Login successfully!')
         } catch (err) {
-            console.log(err)
-            toast.error(err.response?.data.message)
+            // console.log(err)
+            if (err.status === 403) {
+                navigate('/verify-email')
+                set({ email: data.email })
+                set({ verifyEmailMessage: 'Please verify your email to continue' })
+            }
+            else toast.error(err.response?.data.message)
         }
     },
 
@@ -87,8 +128,8 @@ export const createAuthSlice = (set, get) => ({
             set({ isCheckingAuth: false })
             toast.success(res.data.message)
         } catch (err) {
-            console.error(err)
-            toast.error('Something went wrong', err.message)
+            // console.error(err)
+            toast.error(err.response?.data.message)
         }
     },
 
@@ -104,7 +145,7 @@ export const createAuthSlice = (set, get) => ({
             set({ socket })
         }
         catch (err) {
-            console.error(err)
+            // console.error(err)
             // toast.error('Something went wrong', err.message)
         }
         finally {
