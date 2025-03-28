@@ -28,11 +28,11 @@ const Contacts = () => {
   const filteredContacts = useMemo(() => {
     return users.filter((contact) => {
       // console.log(contact.name, query)
-      return contact.name.toLowerCase().includes(query.toLowerCase())
+      return contact.name.toLowerCase().includes(query?.toLowerCase() || '')
     })
   }, [users, query])
   return isUserLoading ? (
-    'loading...'
+    <div className="col-span-3 row-span-11">'loading...'</div>
   ) : (
     <div className="col-span-3 row-span-11 flex flex-col border-r-2 border-r-neutral px-2">
       <div className="flex items-center justify-between px-2">

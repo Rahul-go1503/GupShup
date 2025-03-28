@@ -12,7 +12,10 @@ const UserSchema = new Schema({
     profile: { type: String },
     lastActive: { type: Date },
     phone: { type: Number },
-    country: { type: String, default: 'India' }
+    country: { type: String, default: 'India' },
+    isEmailVerified: { type: Boolean, default: false },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
 }, { timestamps: true }
 )
 

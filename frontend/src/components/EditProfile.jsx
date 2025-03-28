@@ -3,6 +3,7 @@ import { useAppStore } from '@/store' // Zustand store for managing userInfo sta
 import { Button } from '@/components/ui/button'
 import { Mail, Pencil, Trash2, User } from 'lucide-react'
 import { toast } from 'sonner'
+import Input from './Input'
 
 const EditProfileSection = () => {
   const { userInfo, updateUserInfo, uploadProfileImage, removeProfileImage } =
@@ -140,60 +141,45 @@ const EditProfileSection = () => {
 
         {/* Profile Details */}
         <div className="mt-4 space-y-3">
-          <div>
-            <label className="block text-gray-600">Name</label>
-            <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-              <div className="text-muted self-auto">
-                <User size={20} />
-              </div>
-              <input
-                ref={nameRef}
-                type="text"
-                placeholder="Enter name"
-                name="firstName"
-                className="me-2 w-full rounded bg-transparent outline-none"
-                value={profileData.firstName}
-                onChange={handleChange}
-                disabled={!editMode}
-              />
-            </div>
-          </div>
+          <Input
+            label="Name"
+            icon={<User size={20} />}
+            refprop={nameRef}
+            type="text"
+            placeholder="Enter name"
+            name="firstName"
+            className="me-2 w-full rounded bg-transparent outline-none"
+            value={profileData.firstName}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
 
-          <div>
-            <label className="block text-gray-600">Email</label>
-            <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-              <div className="text-muted self-auto">
-                <Mail size={20} />
-              </div>
-              <input
-                type="email"
-                placeholder="Enter email"
-                name="email"
-                className="me-2 w-full rounded bg-transparent outline-none"
-                value={profileData.email}
-                onChange={handleChange}
-                disabled={!editMode}
-              />
-            </div>
-          </div>
+          <Input
+            label="Email"
+            icon={<Mail size={20} />}
+            type="email"
+            placeholder="Enter email"
+            name="email"
+            className="me-2 w-full rounded bg-transparent outline-none"
+            value={profileData.email}
+            onChange={handleChange}
+            disabled={true}
+          />
         </div>
 
         {/* Action Buttons */}
         <div className="mt-4 flex justify-center gap-3">
           {editMode ? (
             <>
-              <Button onClick={handleSave} className="">
+              <Button onClick={handleSave} className="text-primary-content">
                 Save
               </Button>
-              <Button
-                onClick={() => setEditMode(false)}
-                className="bg-gray-500 text-white"
-              >
+              <Button onClick={() => setEditMode(false)} variant="Secondary">
                 Cancel
               </Button>
             </>
           ) : (
-            <Button onClick={handleEditButton} className="">
+            <Button onClick={handleEditButton} className="text-primary-content">
               Edit Profile
             </Button>
           )}

@@ -15,14 +15,14 @@ export const createUserSlice = (set, get) => ({
 
     setUsers: (data) => set({ users: data }),
     getAllUsers: async () => {
-        set({ isUserLoading: true })
         try {
+            set({ isUserLoading: true })
             const response = await axiosInstance.get(ALL_USER_ROUTE)
             // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
+            // console.log(err)
+            toast.error(err.response?.data.message)
         } finally {
             set({ isUserLoading: false })
         }
@@ -35,8 +35,7 @@ export const createUserSlice = (set, get) => ({
             // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
-            console.log(err.message)
-            toast.error('Something Went Wrong')
+            toast.error(err.response?.data?.message)
         } finally {
             set({ isUserLoading: false })
         }
@@ -54,11 +53,13 @@ export const createUserSlice = (set, get) => ({
                 }
             })
             // set({ userInfo: { userInfo, ...res.data.user }, isUpdatingProfile: false })
-            set({ isUpdatingProfile: false })
             toast.success('Profile updated successfully!')
         } catch (err) {
-            console.error(err)
-            toast.error('Something went wrong', err.message)
+            // console.error(err)
+            toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ isUpdatingProfile: false })
         }
     },
 
@@ -84,14 +85,16 @@ export const createUserSlice = (set, get) => ({
                 }
             })
             await get().updateUserInfo({ profileKey: res.data.fileKey })
-            set({ isUpdatingProfile: false })
             // set({ userInfo: { ...userInfo, profile: res.data.fileUrl }, isUpdatingProfile: false })
             toast.success('Profile Image updated successfully!')
             // return res.data.fileKey
         }
         catch (err) {
-            console.error(err)
-            toast.error('Something went wrong', err.message)
+            // console.error(err)
+            toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ isUpdatingProfile: false })
         }
     },
 
@@ -103,8 +106,11 @@ export const createUserSlice = (set, get) => ({
             toast.success('Profile Image deleted successfully!')
         }
         catch (err) {
-            console.error(err)
-            toast.error('Something went wrong', err.message)
+            // console.error(err)
+            toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ isUpdatingProfile: false })
         }
     },
 

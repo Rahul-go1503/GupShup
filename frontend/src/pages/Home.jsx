@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const Home = () => {
-  const navigate = useNavigate()
-  // useEffect(() =>{
-  //   const isLoggedIn = localStorage.getItem('auth');
-  //   if(isLoggedIn){
-  //     navigate('/chat')
-  //   }
-  // },[])
   return (
     <div className="flex h-screen flex-col">
       <nav className="flex justify-end p-2">

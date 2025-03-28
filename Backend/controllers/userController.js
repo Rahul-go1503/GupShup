@@ -4,45 +4,6 @@ import Contact from "../models/Contact.js";
 import { userSocketMap } from "../config/socket.js";
 import { deleteFile, generateFileURL, generatePresignedUrl } from "../utils/generateFileURL.js";
 
-// Create User - sign up
-export const createUser = async (req, res, next) => {
-    const { firstName, email, password } = req.body;
-
-    if (!firstName || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    try {
-        //Check if user already exists
-        const existingUser = await User.findOne({ email });
-        //console.log(existingUser);
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        // Create new user
-        const user = await User.create({ firstName, email, password });
-        // Generate token
-
-        // Todo: Refresh Token
-        // Check: On sign up I'm not generating token
-        // const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
-
-        // res.cookie('jwt', accessToken, {
-        //     htttponly : true,
-        //     secure : process.env.NODE_ENV !== 'development',
-        //     maxAge : 7*24*60*60*1000,
-        //     sameSite : 'strict'
-        // })
-        // console.log(accessToken);
-
-        // Check: response
-        res.status(201).json({ message: 'User Created', user });
-    }
-    catch (error) {
-        next(error)
-    }
-}
 
 // Update User info
 export const updateUserInfo = async (req, res, next) => {

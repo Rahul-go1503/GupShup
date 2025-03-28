@@ -19,7 +19,7 @@ const ConfirmModal = ({
             onClick={() => {
               document.getElementById(id).close(), funAction()
             }}
-            className="w-1/2 bg-primary"
+            className="w-1/2 bg-primary text-primary-content"
           >
             {actionText}
           </Button>

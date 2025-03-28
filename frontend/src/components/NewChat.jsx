@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import NewChatContactCard from './NewChatContactCard.jsx'
 import { ScrollArea } from './ui/scroll-area.jsx'
 import { useAppStore } from '@/store/index.js'
+import Input from './Input.jsx'
 
 const NewChat = () => {
   const [contacts, setContacts] = useState([])
@@ -13,29 +14,26 @@ const NewChat = () => {
 
   const { users } = useAppStore()
   const dropdownRef = useRef(null)
+  // const newChatInputRef = useRef(null)
 
   const existingContacts = users
     .filter((contact) => !contact.isGroup)
     .sort((a, b) => a.name.localeCompare(b.name))
 
   useEffect(() => {
-    console.log(existingContacts)
     setContacts(existingContacts)
   }, [])
 
+  // Todo: replace from here
   const searchUsers = async (query) => {
-    // console.log(searhTerm)
-    // return
     try {
       setQuery(query)
       const res = await axiosInstance.get(SEARCH_ROUTE, {
         params: { searchTerm: query },
       })
-      // console.log(res.data)
       setContacts(res.data)
     } catch (err) {
-      console.log('Error in Searching: ', err)
-      toast.error('Something Went Wrong')
+      toast.error(err.response?.data.message)
     }
   }
   //   handle on dropdown close
@@ -66,18 +64,14 @@ const NewChat = () => {
       >
         <div>
           <p className="my-2 text-lg font-semibold">New Chat</p>
-          <div className="flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-            <div className="text-muted self-auto">
-              <Search size={20} />
-            </div>
-            <input
-              type="text"
-              placeholder="Search user name or email"
-              className="w-full rounded bg-transparent outline-none"
-              value={query}
-              onChange={(e) => searchUsers(e.target.value)}
-            />
-          </div>
+          <Input
+            // refprop={newChatInputRef}
+            icon={<Search size={20} />}
+            type="text"
+            placeholder="Search user name or email"
+            value={query}
+            onChange={(e) => searchUsers(e.target.value)}
+          />
           <ScrollArea className="my-1 h-64">
             {contacts.map((contact, index) => (
               <NewChatContactCard key={index} user={contact} />
