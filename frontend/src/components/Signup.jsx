@@ -2,7 +2,14 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { Eye, EyeClosed, KeyRound, Mail, User } from 'lucide-react'
+import {
+  AudioWaveform,
+  Eye,
+  EyeClosed,
+  KeyRound,
+  Mail,
+  User,
+} from 'lucide-react'
 import { useAppStore } from '@/store'
 import Input from './Input'
 
@@ -72,25 +79,27 @@ const SignUp = () => {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg p-8 shadow-lg">
+        <div className="mb-3 flex items-center justify-start gap-2 border-b-2 border-neutral pb-3 text-primary">
+          <div className="rounded-full p-1 ring-1 ring-inset ring-primary">
+            <AudioWaveform size={20} />
+          </div>
+          <h1 className="text-2xl font-bold">GupShup</h1>
+        </div>
         <h2 className="mb-6 text-center text-2xl font-bold">
           Create Your Account
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium">
-              Full Name
-            </label>
-            <Input
-              icon={<User size={20} />}
-              type="text"
-              placeholder="Enter your name"
-              id="firstName"
-              name="firstName"
-              value={inputs.firstName}
-              onChange={handleChange}
-              autoComplete="off"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            label="Full Name"
+            icon={<User size={20} />}
+            type="text"
+            placeholder="Enter your name"
+            id="firstName"
+            name="firstName"
+            value={inputs.firstName}
+            onChange={handleChange}
+            autoComplete="off"
+          />
           <div>
             <label htmlFor="email" className="block text-sm font-medium">
               Email Address
@@ -163,7 +172,7 @@ const SignUp = () => {
               </div>
             </div>
           </div>
-          <Button type="submit" className="mx-auto text-primary-content">
+          <Button type="submit" className="w-full text-primary-content">
             Sign Up
           </Button>
         </form>

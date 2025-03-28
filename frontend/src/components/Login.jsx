@@ -4,10 +4,11 @@ import { Button } from './ui/button'
 import { useAppStore } from '@/store'
 import { toast } from 'sonner'
 import Input from './Input'
-import { KeyRound, Mail } from 'lucide-react'
+import { AudioWaveform, Eye, EyeClosed, KeyRound, Mail } from 'lucide-react'
 
 const Login = () => {
   const { login, authLoading } = useAppStore()
+  const [showPassword, setShowPassword] = useState(false)
   const [inputs, setInputs] = useState({ email: '', password: '' })
 
   const navigate = useNavigate()
@@ -54,35 +55,50 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg bg-base-200/50 p-8 shadow-lg">
-        <h2 className="mb-6 text-center text-2xl font-bold">Welcome Back</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email Address
-            </label>
-            <Input
-              icon={<Mail size={20} />}
-              type="text"
-              id="email"
-              placeholder="Enter your email"
-              name="email"
-              value={inputs.email}
-              onChange={handleChange}
-            />
+        <div className="mb-3 flex items-center justify-start gap-2 border-b-2 border-neutral pb-3 text-primary">
+          <div className="rounded-full p-1 ring-1 ring-inset ring-primary">
+            <AudioWaveform size={20} />
           </div>
+          <h1 className="text-2xl font-bold">GupShup</h1>
+        </div>
+        <h2 className="mb-6 text-center text-lg font-bold">Welcome Back</h2>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            label="Email Address"
+            icon={<Mail size={20} />}
+            type="text"
+            id="email"
+            placeholder="Enter your email"
+            name="email"
+            value={inputs.email}
+            onChange={handleChange}
+          />
+          {/* label put outside to show password relative postion */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium">
               Password
             </label>
-            <Input
-              icon={<KeyRound size={20} />}
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              name="password"
-              value={inputs.password}
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <Input
+                icon={<KeyRound size={20} />}
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                placeholder="Enter your password"
+                name="password"
+                value={inputs.password}
+                onChange={handleChange}
+              />
+              <div
+                className="absolute inset-y-0 right-3 flex cursor-pointer items-center"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <Eye className="h-5 w-5 text-primary" />
+                ) : (
+                  <EyeClosed className="h-5 w-5" />
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex justify-between text-sm">
             <Link

@@ -17,7 +17,7 @@ import ResetPassword from './pages/ResetPassword'
 
 function App() {
   // Todo: fetch userInfo on Refresh/ Rerender
-  const { isCheckingAuth, checkAuth, theme } = useAppStore()
+  const { checkAuth, theme } = useAppStore()
   useEffect(() => {
     checkAuth()
   }, [checkAuth])

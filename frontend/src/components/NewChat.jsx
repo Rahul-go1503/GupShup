@@ -14,8 +14,11 @@ const NewChat = () => {
 
   const { users } = useAppStore()
   const dropdownRef = useRef(null)
-  // const newChatInputRef = useRef(null)
+  const newChatInputRef = useRef(null)
 
+  const dropdownOpenHandler = () => {
+    setTimeout(() => newChatInputRef.current?.focus(), 0)
+  }
   const existingContacts = users
     .filter((contact) => !contact.isGroup)
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -52,7 +55,12 @@ const NewChat = () => {
   }, [])
   return (
     <div className="dropdown" ref={dropdownRef}>
-      <div tabIndex={0} role="button" className="m-1">
+      <div
+        tabIndex={0}
+        role="button"
+        className="m-1"
+        onClick={dropdownOpenHandler}
+      >
         <div className="my-2 hover:cursor-pointer">
           <UserRoundPlus />
         </div>
@@ -60,12 +68,11 @@ const NewChat = () => {
       <div
         tabIndex={0}
         className="card dropdown-content card-compact relative z-[1] w-72 border-2 bg-base-100 p-4 shadow"
-        // ref={dropdownRef}
       >
         <div>
           <p className="my-2 text-lg font-semibold">New Chat</p>
           <Input
-            // refprop={newChatInputRef}
+            refprop={newChatInputRef}
             icon={<Search size={20} />}
             type="text"
             placeholder="Search user name or email"

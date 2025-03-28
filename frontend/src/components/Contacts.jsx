@@ -6,6 +6,7 @@ import { useAppStore } from '@/store'
 import CreateGroup from './CreateGroup'
 import NewChat from './NewChat'
 import { updateUnReadMessageCount } from '@/events/chatEvents'
+import Input from './Input'
 
 const Contacts = () => {
   const { isUserLoading, users, getAllContacts, selectedUserData } =
@@ -53,20 +54,16 @@ const Contacts = () => {
           </div>
         </div>
       </div>
-      <div className="mb-2 flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-        <div className="text-muted self-auto">
-          <Search size={20} />
-        </div>
-        <input
-          type="text"
-          placeholder="Search or start a new chat"
-          className="me-2 w-full rounded bg-transparent outline-none"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-          }}
-        />
-      </div>
+      <Input
+        icon={<Search size={20} />}
+        type="text"
+        placeholder="Search or start a new chat"
+        className="me-2 w-full rounded bg-transparent outline-none"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value)
+        }}
+      />
       <div className="overflow-y-auto">
         <ScrollArea className="">
           {filteredContacts.map((contact, index) => (
