@@ -1,4 +1,11 @@
-import { MessageSquarePlus, Pencil, Search, Trash2 } from 'lucide-react'
+import {
+  Info,
+  MessageSquarePlus,
+  Pencil,
+  Search,
+  Trash2,
+  Users,
+} from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollArea, ScrollBar } from './ui/scroll-area'
 import NewGroupContactCard from './NewGroupContactCard'
@@ -8,6 +15,7 @@ import { Button } from './ui/button'
 import { createNewGroup } from '@/events/chatEvents'
 import { toast } from 'sonner'
 import ConfirmModal from './ConfirmModal'
+import Input from './Input'
 
 const CreateGroup = () => {
   /***** States*****/
@@ -74,10 +82,10 @@ const CreateGroup = () => {
     )
   }, [members, query])
 
-  const handleSelect = (index) => {
+  const handleSelect = (userId) => {
     setMembers((prev) =>
       prev.map((member, i) => {
-        if (i == index) {
+        if (member.userId == userId) {
           if (member.selected) chipCount.current = chipCount.current - 1
           else chipCount.current = chipCount.current + 1
           return { ...member, selected: !member.selected }
@@ -107,9 +115,7 @@ const CreateGroup = () => {
 
   const closeModal = () => {
     if (modalRef.current) {
-      console.log(document.getElementById('createGroup_modal'))
       document.getElementById('createGroup_modal').close()
-      console.log(document.getElementById('createGroup_modal'))
     }
   }
 
@@ -151,20 +157,17 @@ const CreateGroup = () => {
           <h3 className="text-center font-bold">Create New Group</h3>
           <div className="relative overflow-hidden">
             {/* Search contacts */}
-            <div className="mb-1 flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-              <div className="text-muted self-auto">
-                <Search size={20} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search name"
-                className="me-2 w-full rounded bg-transparent outline-none"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                }}
-              />
-            </div>
+
+            <Input
+              icon={<Search size={20} />}
+              type="text"
+              placeholder="Search name"
+              className="me-2 w-full rounded bg-transparent outline-none"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value)
+              }}
+            />
 
             {/* selected member list */}
             <ScrollArea className="overflow-x my-1">
@@ -175,7 +178,7 @@ const CreateGroup = () => {
                       <UserChip
                         key={index}
                         data={member.name}
-                        funHandleRemove={() => handleSelect(index)}
+                        funHandleRemove={() => handleSelect(member.userId)}
                       />
                     )
                 )}
@@ -189,6 +192,7 @@ const CreateGroup = () => {
                 onClick={() => {
                   setStep(1)
                 }}
+                className="text-primary-content"
               >
                 Next
               </Button>
@@ -200,7 +204,7 @@ const CreateGroup = () => {
                 <NewGroupContactCard
                   key={index}
                   data={contact}
-                  funHandleSelect={() => handleSelect(index)}
+                  funHandleSelect={() => handleSelect(contact.userId)}
                 />
               ))}
             </ScrollArea>
@@ -208,19 +212,6 @@ const CreateGroup = () => {
             <div
               className={`absolute left-0 top-0 z-[10] h-full w-full bg-base-100 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'} p-2`}
             >
-              {/* <h3 className="text-center font-bold">Create New Group</h3> */}
-
-              {/* Back Button */}
-              <div>
-                <Button
-                  onClick={() => {
-                    setStep(0), setQuery('')
-                  }}
-                >
-                  Back
-                </Button>
-              </div>
-
               {/* Group Profile Picture */}
               <div className="my-2 flex flex-col items-center">
                 <div
@@ -260,30 +251,42 @@ const CreateGroup = () => {
 
               {/* Group Name & Description */}
               <div className="flex flex-col gap-2">
-                <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-                  <input
-                    type="text"
-                    placeholder="Group Name"
-                    className="me-2 w-full rounded bg-transparent outline-none"
-                    value={groupName}
-                    onChange={(e) => {
-                      setGroupName(e.target.value)
+                <Input
+                  // label="Group Name"
+                  icon={<Users size={20} />}
+                  type="text"
+                  placeholder="Group Name"
+                  className="me-2 w-full rounded bg-transparent outline-none"
+                  value={groupName}
+                  onChange={(e) => {
+                    setGroupName(e.target.value)
+                  }}
+                />
+                <Input
+                  icon={<Info size={20} />}
+                  type="text"
+                  placeholder="Group description"
+                  className="me-2 w-full rounded bg-transparent outline-none"
+                  value={description}
+                  onChange={(e) => {
+                    setDescription(e.target.value)
+                  }}
+                />
+                <div className="mt-4 flex justify-center gap-2">
+                  <Button
+                    onClick={handleSubmit}
+                    className="w-1/3 text-primary-content"
+                  >
+                    Create
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setStep(0), setQuery('')
                     }}
-                  />
-                </div>
-                <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-                  <input
-                    type="text"
-                    placeholder="Group description"
-                    className="me-2 w-full rounded bg-transparent outline-none"
-                    value={description}
-                    onChange={(e) => {
-                      setDescription(e.target.value)
-                    }}
-                  />
-                </div>
-                <div className="">
-                  <Button onClick={handleSubmit}>Create</Button>
+                    className="w-1/3 bg-base-300 hover:bg-base-200/90"
+                  >
+                    Back
+                  </Button>
                 </div>
               </div>
             </div>

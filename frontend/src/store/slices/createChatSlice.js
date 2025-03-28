@@ -56,15 +56,13 @@ export const createChatSlice = (set, get) => ({
             set({ selectedChatMessages: res.data.messages })
         }
         catch (err) {
-            console.log(err)
-            toast.error('Something Went Wrong')
+            toast.error(err.response?.data?.message)
         } finally {
             set({ isChatsLoading: false })
         }
     },
 
     addMessage: (data) => {
-        console.log('addMessage Reducer: ', data)
         const { selectedUserData, userInfo } = useAppStore.getState()
 
         // if client is in the same chat room
@@ -112,7 +110,6 @@ export const createChatSlice = (set, get) => ({
                     fileType: file.type
                 }
                 const res1 = await axiosInstance.post(MESSAGE_ROUTES, data)
-                console.log(res1)
                 const res = await axios.put(res1.data.url, file, {
                     headers: {
                         "Content-Type": file.type,  // Ensure correct content type
@@ -130,8 +127,7 @@ export const createChatSlice = (set, get) => ({
             }
         }
         catch (err) {
-            console.log(err)
-            toast.error('Something Went Wrong')
+            toast.error(err.response?.data?.message)
         } finally {
             set({ isFilesUploading: false })
         }
@@ -145,9 +141,10 @@ export const createChatSlice = (set, get) => ({
                 groups: state.groups.map((group) => group._id === groupId ? data : group),
                 isUpdating: false,
             }));
-        } catch (error) {
-            console.error('Error updating group:', error);
-            set({ isUpdating: false });
+        } catch (err) {
+            toast.error(err.response?.data?.message)
+        } finally {
+            set({ isUpdating: false })
         }
     },
     reset: () => {

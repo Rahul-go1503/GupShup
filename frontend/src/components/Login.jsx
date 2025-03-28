@@ -7,7 +7,7 @@ import Input from './Input'
 import { KeyRound, Mail } from 'lucide-react'
 
 const Login = () => {
-  const { login } = useAppStore()
+  const { login, authLoading } = useAppStore()
   const [inputs, setInputs] = useState({ email: '', password: '' })
 
   const navigate = useNavigate()
@@ -26,14 +26,16 @@ const Login = () => {
     }
     const emailRegEx = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Email validation regex
 
+    // intial validation
     if (!emailRegEx.test(email)) {
-      toast.error('Invalid email address')
+      toast.error('Invalid Credentials.')
       return false
     }
-    // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-    // if (!passwordRegex.test(password)){
-    //     toast.error('Password should be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.')
-    //     return false
+    // const passwordRegex =
+    //   /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    // if (!passwordRegex.test(password)) {
+    //   toast.error('Invalid Credientials.')
+    //   return false
     // }
     return true
   }
@@ -43,6 +45,12 @@ const Login = () => {
     if (!validateLogin()) return
     login(inputs, navigate)
   }
+  if (authLoading)
+    return (
+      <div className="h-screen w-screen animate-pulse items-center text-xl font-semibold text-gray-700">
+        Logging In...
+      </div>
+    )
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg bg-base-200/50 p-8 shadow-lg">

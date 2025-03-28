@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/config/axios"
-import connectSocket from "@/socket"
+import connectSocket, { getSocket } from "@/socket"
 import { CHECK_AUTH_ROUTE, FORGOT_PASSWORD_ROUTE, LOGIN_ROUTE, LOGOUT_ROUTE, RESEND_VERIFICATION_LINK_ROUTE, RESET_PASSWORD_ROUTE, SIGNUP_ROUTE, VERIFY_EMAIL_ROUTE } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
@@ -97,11 +97,8 @@ export const createAuthSlice = (set, get) => ({
             set({ authLoading: true })
             const res = await axiosInstance.post(LOGIN_ROUTE, data)
             set({ userInfo: res.data.user })
-
-            //Check: userId
-            const { _id: userId, firstName: userName } = res.data.user
-            // console.log('userId : ', userId, 'userName : ', userName)
-            const socket = connectSocket()
+            connectSocket()
+            const socket = getSocket()
             // console.log(socket)
             set({ socket })
             // get().connectSocket()
@@ -114,6 +111,9 @@ export const createAuthSlice = (set, get) => ({
                 set({ verifyEmailMessage: 'Please verify your email to continue' })
             }
             else toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ authLoading: false })
         }
     },
 
@@ -140,8 +140,9 @@ export const createAuthSlice = (set, get) => ({
             // if (res.status == 401) set({ userInfo: null })
             // else 
             set({ userInfo: res.data.user })
-            const userId = res.data.user._id
-            const socket = connectSocket(userId)
+            // const userId = res.data.user._id
+            connectSocket()
+            const socket = getSocket()
             set({ socket })
         }
         catch (err) {

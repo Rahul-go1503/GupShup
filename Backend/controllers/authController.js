@@ -34,8 +34,8 @@ export const signupHandler = async (req, res, next) => {
         const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
         // Send email
-        // console.log(verificationLink);
-        await sendVerificationEmail(email, verificationLink);
+        console.log(verificationLink);
+        await sendVerificationEmail(firstName, email, verificationLink);
 
         res.status(200).json({ message: "Verification email sent. Please check your inbox." });
 
@@ -63,7 +63,7 @@ export const resendVerificationLinkHandler = async (req, res) => {
 
     // Send email
     // console.log(verificationLink);
-    await sendVerificationEmail(email, verificationLink);
+    await sendVerificationEmail(user.firstName, email, verificationLink);
     res.json({ message: "Verification email sent. Please check your inbox." });
 }
 export const verifyEmailHandler = async (req, res) => {
@@ -83,7 +83,7 @@ export const verifyEmailHandler = async (req, res) => {
 
         res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
-        res.status(400).json({ message: "Invalid or expired link" });
+        res.status(500).json({ message: "Server Error, please try after some time" });
     }
 };
 
@@ -103,7 +103,7 @@ export const forgotPasswordHandler = async (req, res, next) => {
         // Send email with reset link
         const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
         // console.log(resetLink)
-        await sendPasswordResetEmail(email, resetToken)
+        await sendPasswordResetEmail(user.firstName, email, resetLink)
         // await sendEmail(email, "Reset Your Password", `Click here to reset: ${resetLink}`);
 
         res.json({ message: "Reset link sent to email." });
@@ -126,7 +126,7 @@ export const resetPasswordHandler = async (req, res, next) => {
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        await sendResetSuccessEmail(user.email)
+        await sendResetSuccessEmail(user.firstName, user.email)
         res.json({ message: "Password reset successful" });
     }
     catch (err) {

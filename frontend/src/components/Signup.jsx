@@ -62,7 +62,7 @@ const SignUp = () => {
     signup(inputs, navigate)
   }
 
-  // Todo: show and hide password and more validation
+  // Todo: validation
   if (authLoading)
     return (
       <div className="h-screen w-screen animate-pulse items-center text-xl font-semibold text-gray-700">

@@ -1,22 +1,23 @@
 import { transporter, sender } from "./emailConfig.js";
 import {
-    PASSWORD_RESET_REQUEST_TEMPLATE,
-    PASSWORD_RESET_SUCCESS_TEMPLATE,
-    VERIFICATION_EMAIL_TEMPLATE,
+    getPasswordResetEmailTemplate,
+    getPasswordResetSuccessEmailTemplate,
+    getVerificationEmailTemplate
 } from "./emailTemplates.js";
 
-export const sendVerificationEmail = async (email, verificationToken) => {
+export const sendVerificationEmail = async (firstName, email, verificationLink) => {
     // const recipient = [{ email }];
-
+    const emailHTML = getVerificationEmailTemplate(firstName, verificationLink);
     try {
         const response = await transporter.sendMail({
             from: sender,
             to: email,
             subject: "Verify your email",
-            html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken),
+            // html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken),
+            html: emailHTML
         });
 
-        console.log("Email sent successfully", response);
+        // console.log("Email sent successfully", response);
     } catch (error) {
         console.error(`Error sending verification`, error);
 
@@ -47,15 +48,15 @@ export const sendWelcomeEmail = async (email, name) => {
 };
 */
 
-export const sendPasswordResetEmail = async (email, resetURL) => {
+export const sendPasswordResetEmail = async (firstName, email, resetURL) => {
     // const recipient = [{ email }];
-
+    const emailHtml = getPasswordResetEmailTemplate(firstName, resetURL)
     try {
         const response = await transporter.sendMail({
             from: sender,
             to: email,
             subject: "Reset your password",
-            html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
+            html: emailHtml
             // category: "Password Reset",
         });
     } catch (error) {
@@ -65,19 +66,19 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
     }
 };
 
-export const sendResetSuccessEmail = async (email) => {
+export const sendResetSuccessEmail = async (firstName, email) => {
     // const recipient = [{ email }];
-
+    const emailHtml = getPasswordResetSuccessEmailTemplate(firstName)
     try {
         const response = await transporter.sendMail({
             from: sender,
             to: email,
             subject: "Password Reset Successful",
-            html: PASSWORD_RESET_SUCCESS_TEMPLATE,
+            html: emailHtml,
             // category: "Password Reset",
         });
 
-        console.log("Password reset email sent successfully", response);
+        // console.log("Password reset email sent successfully", response);
     } catch (error) {
         console.error(`Error sending password reset success email`, error);
 
