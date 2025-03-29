@@ -1,12 +1,12 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Message from './Message'
-import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
 import { formatDateTitle } from '@/utils/formatDateTime'
 
 const ChatWindow = () => {
   const { selectedChatMessages } = useAppStore()
-  // const {message, createdAt, fromSelf} = selectedChatMessages
+  const messageEndRef = useRef(null)
+
   const renderMessages = () => {
     let lastDate = null
     return selectedChatMessages.map((data, index) => {
@@ -15,19 +15,35 @@ const ChatWindow = () => {
       lastDate = msgDate
       return (
         <div key={index}>
-          {showDate && <div className="text-center">{lastDate}</div>}
+          {showDate && (
+            <div className="flex justify-center">
+              <div className="m-2 rounded bg-base-300 p-2 text-sm font-semibold text-base-content shadow-lg">
+                {lastDate}
+              </div>
+            </div>
+          )}
           <Message data={data} />
         </div>
       )
     })
   }
+  useEffect(() => {
+    if (messageEndRef.current) {
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+        })
+      }, 500)
+    }
+  }, [selectedChatMessages])
+
   return (
-    <>
-      {/* console.log(data) */}
-      <div className="row-span-8 bg-primary/5">
-        <ScrollArea className="h-full">{renderMessages()}</ScrollArea>
-      </div>
-    </>
+    <div className="row-span-8 overflow-scroll">
+      {renderMessages()}
+      {/* Ref at the end for scrolling */}
+      <div ref={messageEndRef} />
+    </div>
   )
 }
 

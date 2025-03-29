@@ -67,7 +67,7 @@ const NewChat = () => {
       </div>
       <div
         tabIndex={0}
-        className="card dropdown-content card-compact relative z-[1] w-72 border-2 bg-base-100 p-4 shadow"
+        className="dropdown-content z-[1] w-72 rounded-box bg-base-300 p-4 shadow-2xl"
       >
         <div>
           <p className="my-2 text-lg font-semibold">New Chat</p>

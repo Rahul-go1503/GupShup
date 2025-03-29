@@ -1,9 +1,9 @@
 import { useAppStore } from '@/store'
 import { formatMessageTime } from '@/utils/formatDateTime.js'
+import { File } from 'lucide-react'
 import React, { useEffect, useRef } from 'react'
 
 const Message = ({ data }) => {
-  // console.log(data)
   const {
     message,
     senderId,
@@ -14,13 +14,6 @@ const Message = ({ data }) => {
     fileUrl,
   } = data
   const { userInfo } = useAppStore()
-  //   console.log(userInfo, selectedUserData)
-  const messageEndRef = useRef(null)
-  useEffect(() => {
-    if (messageEndRef.current && message) {
-      messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [message])
 
   const renderMessageContent = () => {
     switch (messageType) {
@@ -33,7 +26,7 @@ const Message = ({ data }) => {
             <img
               src={fileUrl}
               alt="Shared Image"
-              className="max-w-xs rounded-lg"
+              className="max-h-72 min-w-72 rounded-lg object-cover"
             />
           </a>
         )
@@ -48,7 +41,7 @@ const Message = ({ data }) => {
 
       case 'video':
         return (
-          <video controls className="max-w-xs rounded-lg">
+          <video controls className="max-h-72 min-w-72 rounded-lg object-cover">
             <source src={fileUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -56,14 +49,17 @@ const Message = ({ data }) => {
 
       case 'pdf':
         return (
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 underline"
-          >
-            View PDF
-          </a>
+          <div className="flex items-center justify-center gap-2">
+            <File size={20} />
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              View PDF
+            </a>
+          </div>
         )
 
       case 'file':
@@ -84,16 +80,22 @@ const Message = ({ data }) => {
   }
   // Todo : design this notification
   return isNotification ? (
-    <div className="text-center">{message}</div>
+    <div className="flex justify-center">
+      <div className="my-1 rounded bg-base-200 bg-opacity-50 p-1 text-xs font-light italic">
+        {message}
+      </div>
+    </div>
   ) : (
     <div
       className={`chat ${senderId != userInfo._id ? 'chat-start' : 'chat-end'}`}
-      ref={messageEndRef}
+      // ref={messageEndRef}
     >
       <div className="chat-header">
         {senderId == userInfo._id ? 'You' : senderName}
       </div>
-      <div className="chat-bubble chat-bubble-primary max-w-96 whitespace-pre-wrap">
+      <div
+        className={`chat-bubble ${senderId != userInfo._id ? 'bg-base-300 text-base-content' : 'chat-bubble-primary'} max-h-96 max-w-96 whitespace-pre-wrap p-2`}
+      >
         {renderMessageContent()}
       </div>
       <div className="chat-footer opacity-50">

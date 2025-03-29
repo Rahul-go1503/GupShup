@@ -33,6 +33,7 @@ const ConfirmModal = ({
           </Button>
         </div>
       </div>
+      <form method="dialog" className="modal-backdrop"></form>
     </dialog>
   )
 }

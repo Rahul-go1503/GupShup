@@ -1,9 +1,10 @@
-import { createNewChat, sendMessage } from '@/events/messageEvents.js'
+import { sendMessage } from '@/events/messageEvents.js'
 import { useAppStore } from '@/store'
 import EmojiPicker from 'emoji-picker-react'
 import { Paperclip, SendHorizontal, Smile } from 'lucide-react'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import FilePicker from './FilePicker'
+import { createNewChat } from '@/events/chatEvents'
 
 const ChatInputBar = () => {
   const [message, setMessage] = useState('')

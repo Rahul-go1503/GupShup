@@ -3,7 +3,7 @@ import { formatLastMessageTime } from '@/utils/formatDateTime'
 import React from 'react'
 
 const ContactCard = ({ user }) => {
-  const { selectedUserData, setSelectedUserData } = useAppStore()
+  const { selectedUserData, setSelectedUserData, userInfo } = useAppStore()
 
   const contactClickHandler = () => {
     setSelectedUserData(user)
@@ -33,8 +33,10 @@ const ContactCard = ({ user }) => {
       <div className="col-span-7">
         <p className="truncate font-medium">{user.name}</p>
         <p className="truncate text-sm">
-          {(user.isGroup && !user.isNotification
-            ? user.latestMessageSender + ':'
+          {(!user.isNotification
+            ? (user.latestMessageSenderId == userInfo._id
+                ? 'You'
+                : user.latestMessageSender) + ': '
             : '') + user.latestMessage || 'No messages yet'}
         </p>
       </div>

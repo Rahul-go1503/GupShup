@@ -1,51 +1,50 @@
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
 
+export const createNewChat = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('newChat', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+    })
+}
 
 export const createNewGroup = async (data) => {
-    try {
-        const { socket } = useAppStore.getState()
-        socket.emit('newGroup', data, (status, err) => {
-            console.log(status, err)
-            if (status == 'ok') {
-                toast.success('Group Created')
-            }
-            else {
-                throw new Error('Something Went Wrong', err)
-            }
-        })
-    }
-    catch (err) {
-        console.log(err)
-        toast.error(err.message)
-    }
+    const { socket } = useAppStore.getState()
+    socket.emit('newGroup', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Group Created')
+    })
 }
 
 export const updateUnReadMessageCount = async (data) => {
-    const { socket, selectedUserData, userInfo, users, setUsers } = useAppStore.getState()
+    const { socket, selectedUserData, userInfo } = useAppStore.getState()
     const data2 = {
         ...data,
         userId: userInfo._id
     }
-    console.log('updateUnReadMessageCount trigger', data)
-    socket.emit('updateUnReadMessageCount', data2) //,(res) => {
-    // console.log('Something Went Wrong')
-    // if (res & res.status == 'ok') {
-    const syncContacts = users.map((contact) => {
-        // console.log(contact._id, data.contactId)
-        if (contact._id == selectedUserData?._id) {
-            return { ...contact, unReadMessageCount: 0 }
+    socket.emit('updateUnReadMessageCount', data2, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
         }
-        else if (contact._id == data.contactId) {
-            return { ...contact, unReadMessageCount: contact.unReadMessageCount + 1 }
+        else {
+            const { users, setUsers } = useAppStore.getState()
+            const syncContacts = users.map((contact) => {
+                if (contact._id == selectedUserData?._id) {
+                    return { ...contact, unReadMessageCount: 0 }
+                }
+                else if (contact._id == data.contactId) {
+                    return { ...contact, unReadMessageCount: contact.unReadMessageCount + 1 }
+                }
+                return contact
+            })
+            setUsers(syncContacts)
         }
-        return contact
     })
-    // console.log(syncContacts, users)
-    setUsers(syncContacts)
-    // }
-    // else {
-    //     console.log('something went wrong')
-    // }
-    //})
 }

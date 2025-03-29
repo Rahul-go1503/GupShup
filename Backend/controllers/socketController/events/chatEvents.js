@@ -7,12 +7,9 @@ import { strToObjId } from "../../../utils/strToObjId.js";
 
 export const handleChatEvents = (io, socket) => {
     const { _id: userId, firstName: userName } = socket.handshake.auth
-    // Todo: fetch from the userInfo -> done
-    // const profile = null
-    socket.on('newChat', async (data1, callback) => {
+    socket.on('newChat', async (data, callback) => {
         try {
-            const { message, id } = data1
-            console.log(data1)
+            const { message, id } = data
             const currentTimestamp = Date.now();
             const receiverUserId = strToObjId(id)
 
@@ -20,10 +17,6 @@ export const handleChatEvents = (io, socket) => {
             const newContact = new Contact({
                 members: [{ userId: userId, unReadMessageCount: 0 }, { userId: receiverUserId, unReadMessageCount: 1 }]
             })
-            await newContact.save()
-            // update contact id for the client who created new chat
-            io.to(userId).emit('updateContactId', newContact._id)
-
             // inserting new msg
             const newMessage = new Message({
                 senderId: userId,
@@ -34,69 +27,61 @@ export const handleChatEvents = (io, socket) => {
                 ],
                 message
             })
-            await newMessage.save()
             newContact.latestMessageId = newMessage._id
-            await newContact.save()
-
-            // send new chat data
-            const chatData = {
+            await Promise.all([newContact.save(), newMessage.save()]);
+            // Fetch sender and receiver data concurrently
+            const [receiver, sender] = await Promise.all([
+                User.findById(receiverUserId).select('_id firstName profile'),
+                User.findById(userId).select('_id firstName profile')
+            ]);
+            const chatDataSender = {
                 _id: newContact._id,
                 isGroup: false,
                 latestMessage: message,
                 latestMessageAt: currentTimestamp,
-                // unReadMessageCount: 0
-            }
-            //To Sender
-            const receiver = await User.findById(receiverUserId).select('_id firstName profile')
-            const chatData1 = {
-                ...chatData,
                 name: receiver.firstName,
                 profile: await generateFileURL(receiver.profile),
                 userId: receiver._id,
                 unReadMessageCount: 0
-            }
-            io.to(userId).emit('newChat', chatData1)
-            // To receiver
-            const sender = await User.findById(userId).select('_id firstName profile')
-            const chatData2 = {
-                ...chatData,
+            };
+            const chatDataReceiver = {
+                ...chatDataSender,
                 name: sender.firstName,
                 profile: await generateFileURL(sender.profile),
                 userId: sender._id,
                 unReadMessageCount: 1
-            }
-            io.to(id).emit('newChat', chatData2)
+            };
             const data = { senderId: userId, senderName: userName, message, messageType: newMessage.messageType, contactId: newMessage._id, createdAt: newMessage.createdAt }
+
+            // Emiting Events
+            io.to(userId).emit('updateContactId', newContact._id)
+            io.to(userId).emit('newChat', chatDataSender)
+            io.to(id).emit('newChat', chatDataReceiver)
             io.to(id).emit('receiveMessage', data)
+            callback({ success: true })
         }
         catch (err) {
             console.log(err)
-            callback({ error: err.message })
+            callback({ success: false, error: err.message || "An unknown error occurred" })
         }
     })
 
     socket.on('newGroup', async (data, callback) => {
         try {
             const { groupProfileData, groupName, description, members } = data
-            // console.log(data)
-            // const Admin = socket.handshake.query.userId
-            // const AdminName = socket.handshake.query.userName
-
+            if (!members || members.length < 3) throw new Error('minimum 3 members are required to form a group')
             const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
 
             const groupMembers = []
             let receiverIds = []
             receiverIds.push({ userId, seenAt: currentTimestamp })
             groupMembers.push({ userId, isAdmin: true })
-            if (!members) throw { message: 'minimum 2 members are required to form a group' }
 
 
             for (const member of members) {
                 const userId = await User.findOne({ _id: strToObjId(member) }).select('_id')
-                // console.log("USER ID : ", userId, "\n")
-                // console.log(userId)
                 if (!userId) {
-                    throw { message: 'User not found' }
+                    throw new Error('User not found')
                 }
                 groupMembers.push({ userId: userId._id })
                 receiverIds.push({
@@ -110,7 +95,7 @@ export const handleChatEvents = (io, socket) => {
                 members: groupMembers,
                 isGroup: true,
             })
-            await newGroup.save()
+            // await newGroup.save()
 
             // Upload to S3
             let profileUrl = null
@@ -120,7 +105,6 @@ export const handleChatEvents = (io, socket) => {
                 profileUrl = await uploadToS3(buffer, profileKey, groupProfileData.fileType);
                 newGroup.profile = profileKey
             }
-            // console.log(profileUrl)
 
             const newMessage = new Message({
                 senderId: userId,
@@ -130,10 +114,11 @@ export const handleChatEvents = (io, socket) => {
                 isNotification: true,
             })
 
-            await newMessage.save()
+            // await newMessage.save()
 
             newGroup.latestMessageId = newMessage._id
-            await newGroup.save()
+            // await newGroup.save()
+            await Promise.all([newGroup.save(), newMessage.save()]);
 
             const resData = {
                 _id: newGroup._id,
@@ -145,27 +130,21 @@ export const handleChatEvents = (io, socket) => {
                 unReadMessageCount: 0,
                 isNotification: true
             }
-            // console.log(resData)
             for (const member of newGroup.members) {
-                // const receiverSocket = userSocketMap.get(member.userId.toString())
                 const receiverRoom = member.userId.toString()
-                // console.log('Emitting create Group event : ', member.userId, receiverRoom)
-                // if (receiverSocket) io.to(receiverSocket).emit('newGroup', { group: { ...newGroup._doc } })
-                // console.log('newGroup Event handler', newGroup)
                 io.to(receiverRoom).emit('newGroup', { group: { ...resData, isAdmin: member.isAdmin } })
             }
-            callback('ok')
+            callback({ success: true })
         }
         catch (err) {
             console.log(err)
-            callback('error', err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
         }
     })
 
-    socket.on('updateUnReadMessageCount', async (data) => {
+    socket.on('updateUnReadMessageCount', async (data, callback) => {
         try {
             const { contactId, userId, count } = data
-            // console.log(data)
             await Contact.findOneAndUpdate(
                 {
                     _id: strToObjId(contactId),
@@ -176,12 +155,11 @@ export const handleChatEvents = (io, socket) => {
                         'members.$.unReadMessageCount': count
                     }
                 })
-            // callback({ status: 'ok' })
-            // console.log(contact)
+            callback({ success: true })
         }
         catch (err) {
             console.log(err)
-            // callback({ error: err.message })
+            callback({ success: false, error: err.message || "An unknown error occurred" })
         }
     })
 }
