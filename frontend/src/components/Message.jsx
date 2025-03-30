@@ -1,7 +1,6 @@
 import { useAppStore } from '@/store'
 import { formatMessageTime } from '@/utils/formatDateTime.js'
 import { File } from 'lucide-react'
-import React, { useEffect, useRef } from 'react'
 
 const Message = ({ data }) => {
   const {
@@ -88,7 +87,6 @@ const Message = ({ data }) => {
   ) : (
     <div
       className={`chat ${senderId != userInfo._id ? 'chat-start' : 'chat-end'}`}
-      // ref={messageEndRef}
     >
       <div className="chat-header">
         {senderId == userInfo._id ? 'You' : senderName}

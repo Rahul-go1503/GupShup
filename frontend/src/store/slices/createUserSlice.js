@@ -18,7 +18,6 @@ export const createUserSlice = (set, get) => ({
         try {
             set({ isUserLoading: true })
             const response = await axiosInstance.get(ALL_USER_ROUTE)
-            // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
             // console.log(err)
@@ -28,11 +27,9 @@ export const createUserSlice = (set, get) => ({
         }
     },
     getAllContacts: async () => {
-        // console.log('getAllContacts Called')
         try {
             set({ isUserLoading: true })
             const response = await axiosInstance.get(ALL_CONTACTS_ROUTE)
-            // console.log(response.data)
             set({ users: response.data })
         } catch (err) {
             toast.error(err.response?.data?.message)
@@ -44,15 +41,12 @@ export const createUserSlice = (set, get) => ({
     updateUserInfo: async (data) => {
         try {
             set({ isUpdatingProfile: true })
-            // console.log(data)
-            // return
             const res = await axiosInstance.put(USER_ROUTE, data)
             set((state) => {
                 return {
                     userInfo: { ...state.userInfo, ...res.data.user }
                 }
             })
-            // set({ userInfo: { userInfo, ...res.data.user }, isUpdatingProfile: false })
             toast.success('Profile updated successfully!')
         } catch (err) {
             // console.error(err)
@@ -71,7 +65,6 @@ export const createUserSlice = (set, get) => ({
                 fileType: file.type
             }
             const res = await axiosInstance.put(USER_PROFILE_ROUTE, data)
-            // console.log(res)
             await axios.put(res.data.url, file, {
                 headers: {
                     "Content-Type": file.type,  // Ensure correct content type
@@ -85,9 +78,7 @@ export const createUserSlice = (set, get) => ({
                 }
             })
             await get().updateUserInfo({ profileKey: res.data.fileKey })
-            // set({ userInfo: { ...userInfo, profile: res.data.fileUrl }, isUpdatingProfile: false })
-            toast.success('Profile Image updated successfully!')
-            // return res.data.fileKey
+            // toast.success('Profile Image updated successfully!')
         }
         catch (err) {
             // console.error(err)

@@ -101,7 +101,6 @@ const GroupChatDetailsModal = () => {
   // Remove group image
   const handleRemoveProfile = () => {
     setGroupDetails({ ...groupDetails, profile: null })
-    removeGroupImage()
   }
 
   // Toggle Member in Group

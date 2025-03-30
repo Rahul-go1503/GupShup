@@ -37,8 +37,10 @@ export const handleChatEvents = (io, socket) => {
             const chatDataSender = {
                 _id: newContact._id,
                 isGroup: false,
-                latestMessage: message,
-                latestMessageAt: currentTimestamp,
+                message: message,
+                createdAt: currentTimestamp,
+                senderId: sender._id,
+                senderName: sender.firstName,
                 name: receiver.firstName,
                 profile: await generateFileURL(receiver.profile),
                 userId: receiver._id,
@@ -51,13 +53,13 @@ export const handleChatEvents = (io, socket) => {
                 userId: sender._id,
                 unReadMessageCount: 1
             };
-            const data = { senderId: userId, senderName: userName, message, messageType: newMessage.messageType, contactId: newMessage._id, createdAt: newMessage.createdAt }
+            const response = { senderId: userId, senderName: userName, message, messageType: newMessage.messageType, contactId: newMessage._id, createdAt: newMessage.createdAt }
 
             // Emiting Events
             io.to(userId).emit('updateContactId', newContact._id)
             io.to(userId).emit('newChat', chatDataSender)
             io.to(id).emit('newChat', chatDataReceiver)
-            io.to(id).emit('receiveMessage', data)
+            io.to(id).emit('receiveMessage', response)
             callback({ success: true })
         }
         catch (err) {
@@ -69,7 +71,7 @@ export const handleChatEvents = (io, socket) => {
     socket.on('newGroup', async (data, callback) => {
         try {
             const { groupProfileData, groupName, description, members } = data
-            if (!members || members.length < 3) throw new Error('minimum 3 members are required to form a group')
+            if (!members || members.length < 2) throw new Error('minimum 3 members are required to form a group')
             const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
 
             const groupMembers = []
@@ -125,8 +127,8 @@ export const handleChatEvents = (io, socket) => {
                 profile: profileUrl,
                 isGroup: true,
                 name: newGroup.name,
-                latestMessage: newMessage.message,
-                latestMessageAt: currentTimestamp,
+                message: newMessage.message,
+                createdAt: currentTimestamp,
                 unReadMessageCount: 0,
                 isNotification: true
             }

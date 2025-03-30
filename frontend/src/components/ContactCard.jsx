@@ -34,18 +34,16 @@ const ContactCard = ({ user }) => {
         <p className="truncate font-medium">{user.name}</p>
         <p className="truncate text-sm">
           {(!user.isNotification
-            ? (user.latestMessageSenderId == userInfo._id
-                ? 'You'
-                : user.latestMessageSender) + ': '
-            : '') + user.latestMessage || 'No messages yet'}
+            ? (user.senderId == userInfo._id ? 'You' : user.senderName) + ': '
+            : '') + user.message || 'No messages yet'}
         </p>
       </div>
 
       {/* Status and Time Section */}
       <div className="col-span-3 flex flex-col items-end gap-1 place-self-start justify-self-end">
-        {user.latestMessageAt && (
+        {user.createdAt && (
           <span className="text-xs">
-            {formatLastMessageTime(user.latestMessageAt)}
+            {formatLastMessageTime(user.createdAt)}
           </span>
         )}
         {user.unReadMessageCount > 0 && (

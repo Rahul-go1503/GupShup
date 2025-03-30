@@ -112,10 +112,10 @@ export const getAllContacts = async (req, res, next) => {
                     isGroup: contact.isGroup,
                     name: contact.name,
                     profile: await generateFileURL(contact.profile),
-                    latestMessage: contact.latestMessage[0]?.message,
-                    latestMessageSenderId: contact.latestMessageSender[0]?._id,
-                    latestMessageSender: contact.latestMessageSender[0]?.firstName,
-                    latestMessageAt: contact.latestMessage[0]?.createdAt,
+                    message: contact.latestMessage[0]?.message,
+                    senderId: contact.latestMessageSender[0]?._id,
+                    senderName: contact.latestMessageSender[0]?.firstName,
+                    createdAt: contact.latestMessage[0]?.createdAt,
                     unReadMessageCount: contact.members[0].unReadMessageCount || 0,
                     isAdmin: contact.members[0].isAdmin,
                     isNotification: contact.latestMessage[0]?.isNotification
@@ -128,10 +128,10 @@ export const getAllContacts = async (req, res, next) => {
                     isGroup: contact.isGroup,
                     name: contact.users.find(member => !member._id.equals(userId))?.firstName,
                     profile: await generateFileURL(contact.users.find(member => !member._id.equals(userId))?.profile),
-                    latestMessage: contact.latestMessage[0]?.message,
-                    latestMessageSenderId: contact.latestMessageSender[0]?._id,
-                    latestMessageSender: contact.latestMessageSender[0]?.firstName,
-                    latestMessageAt: contact.latestMessage[0]?.createdAt,
+                    message: contact.latestMessage[0]?.message,
+                    senderId: contact.latestMessageSender[0]?._id,
+                    senderName: contact.latestMessageSender[0]?.firstName,
+                    createdAt: contact.latestMessage[0]?.createdAt,
                     // status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
                     unReadMessageCount: contact.members.find(member => member.userId.equals(userId))?.unReadMessageCount || 0,
                     userId: contact.users.find(member => !member._id.equals(userId))?._id
@@ -140,7 +140,7 @@ export const getAllContacts = async (req, res, next) => {
         }
 
         // console.log('All contacts: ', data)
-        data.sort((a, b) => new Date(b.latestMessageAt) - new Date(a.latestMessageAt))
+        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         res.status(200).json(data)
     }
     catch (err) {

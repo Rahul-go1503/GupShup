@@ -69,7 +69,6 @@ export const createChatSlice = (set, get) => ({
 
     addMessage: (data) => {
         const { selectedUserData, userInfo } = useAppStore.getState()
-        console.log(data)
         // if client is in the same chat room
         if (selectedUserData?._id == data.contactId) {
             set((state) => {
@@ -90,11 +89,11 @@ export const createChatSlice = (set, get) => ({
         // Sync the latest message in the users list
         const syncContacts = get().users.map((contact) => {
             if (contact._id == data.contactId) {
-                return { ...contact, latestMessage: data.message, latestMessgeSender: data.senderName, latestMessageAt: data.createdAt }
+                return { ...contact, ...data }
             }
             else return contact
         })
-        syncContacts.sort((a, b) => new Date(b.latestMessageAt) - new Date(a.latestMessageAt))
+        syncContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         set({ users: syncContacts })
     },
 
