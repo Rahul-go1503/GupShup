@@ -5,6 +5,7 @@ import { useAppStore } from '@/store'
 import { toast } from 'sonner'
 import Input from './Input'
 import { AudioWaveform, Eye, EyeClosed, KeyRound, Mail } from 'lucide-react'
+import { isEmailValid, isPasswordValid } from '@/utils/validatiors'
 
 const Login = () => {
   const { login, authLoading } = useAppStore()
@@ -18,27 +19,13 @@ const Login = () => {
     setInputs((values) => ({ ...values, [name]: value }))
   }
 
-  // Todo: validation pending
   const validateLogin = () => {
     let { email, password } = inputs
     if (email.trim() === '' || password.trim() === '') {
       toast.error('All Fields are required')
       return false
     }
-    const emailRegEx = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Email validation regex
-
-    // intial validation
-    if (!emailRegEx.test(email)) {
-      toast.error('Invalid Credentials.')
-      return false
-    }
-    // const passwordRegex =
-    //   /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-    // if (!passwordRegex.test(password)) {
-    //   toast.error('Invalid Credientials.')
-    //   return false
-    // }
-    return true
+    return isEmailValid(email) && isPasswordValid(password)
   }
 
   const handleSubmit = async (e) => {

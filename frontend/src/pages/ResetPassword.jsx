@@ -17,10 +17,18 @@ const ResetPassword = () => {
   const navigate = useNavigate()
   const { resetPassword } = useAppStore()
 
+  const validateInputs = () => {
+    if (!isPasswordValid(newPassword)) return false
+    if (newPassword !== newConfirmPassword) {
+      toast.error("Passwords don't match")
+      return false
+    }
+    return true
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!token) return setMessage('Invalid or expired token.')
-
+    validateInputs()
     const response = await resetPassword(token, newPassword)
     setMessage(response.message)
 

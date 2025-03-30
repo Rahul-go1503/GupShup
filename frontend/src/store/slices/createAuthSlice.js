@@ -11,7 +11,7 @@ const initialState = {
     userInfo: null,
     socket: null,
     email: null,
-    verifyEmailMessage: 'A verification link has been sent to your email. Please verify your email to continue.'
+    verifyEmailMessage: ''
 }
 
 export const createAuthSlice = (set, get) => ({
@@ -34,6 +34,7 @@ export const createAuthSlice = (set, get) => ({
         }
     },
 
+    setVerifyEmailMessage: (message) => { set({ verifyEmailMessage: message }) },
     resendVerificationLink: async (email, navigate) => {
         try {
             const res = await axiosInstance.post(RESEND_VERIFICATION_LINK_ROUTE, { email })
@@ -44,24 +45,26 @@ export const createAuthSlice = (set, get) => ({
         catch (err) {
             // console.log(err)
             if (err.response?.data.error == 'Email is already verified.') {
-                setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
                 set({ verifyEmailMessage: `${err.response?.data.error}. Redirecting to login page...` })
+                setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
             }
             else set({ verifyEmailMessage: err.response?.data.error || "Something went wrong" })
-            // return err.response?.data.error || "Something went wrong"
         }
     },
 
     verifyEmail: async (token, navigate) => {
+        set({ verifyEmailMessage: 'some msg' })
         try {
             const response = await axiosInstance.get(`${VERIFY_EMAIL_ROUTE}/?token=${token}`);
             setTimeout(() => navigate('/login', { replace: true }), 3000) // Redirect to login after 3s
             set({ verifyEmailMessage: `${response?.data.message}. Redirecting to login page...` })
-            // return `${response?.data.message}. Redirecting to login page...`;
         } catch (error) {
-            // console.log(error)
-            set({ verifyEmailMessage: error.response?.data.message || "Something went wrong" })
-            // return error.response?.data.message || { message: "Something went wrong" };
+            if (err.response?.data.error == 'Email is already verified.') {
+                set({ verifyEmailMessage: `${err.response?.data.error}. Redirecting to login page...` })
+                console.log(verifyEmailMessage)
+                setTimeout(() => navigate('/login', { replace: true }), 5000) // Redirect to login after 3s
+            }
+            else set({ verifyEmailMessage: err.response?.data.error || "Something went wrong" })
         }
     },
 
@@ -82,10 +85,8 @@ export const createAuthSlice = (set, get) => ({
     resetPassword: async (token, newPassword) => {
         try {
             const response = await axiosInstance.post(RESET_PASSWORD_ROUTE, { token, newPassword });
-            // console.log(response)
             return response.data;
         } catch (error) {
-            // console.error(error)
             toast.error(error.response?.data.message)
             return error.response?.data || { message: "Something went wrong" };
 
@@ -93,18 +94,14 @@ export const createAuthSlice = (set, get) => ({
     },
     login: async (data, navigate) => {
         try {
-            // console.log(data)
             set({ authLoading: true })
             const res = await axiosInstance.post(LOGIN_ROUTE, data)
             set({ userInfo: res.data.user })
             connectSocket()
             const socket = getSocket()
-            // console.log(socket)
             set({ socket })
-            // get().connectSocket()
             toast.success('User Login successfully!')
         } catch (err) {
-            // console.log(err)
             if (err.status === 403) {
                 navigate('/verify-email')
                 set({ email: data.email })
@@ -123,12 +120,10 @@ export const createAuthSlice = (set, get) => ({
             get().socket.disconnect()
 
             const { resetStore } = useAppStore.getState()
-            // set({ ...initialState, isCheckingAuth: false })
             resetStore()
             set({ isCheckingAuth: false })
             toast.success(res.data.message)
         } catch (err) {
-            // console.error(err)
             toast.error(err.response?.data.message)
         }
     },
@@ -136,11 +131,7 @@ export const createAuthSlice = (set, get) => ({
     checkAuth: async () => {
         try {
             let res = await axiosInstance.get(CHECK_AUTH_ROUTE)
-            // console.log(res)
-            // if (res.status == 401) set({ userInfo: null })
-            // else 
             set({ userInfo: res.data.user })
-            // const userId = res.data.user._id
             connectSocket()
             const socket = getSocket()
             set({ socket })

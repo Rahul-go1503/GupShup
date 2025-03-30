@@ -3,8 +3,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const VerifyYourEmail = () => {
-  const { email, verifyEmail, verifyEmailMessage, resendVerificationLink } =
-    useAppStore()
+  const {
+    email,
+    verifyEmail,
+    verifyEmailMessage,
+    setVerifyEmailMessage,
+    resendVerificationLink,
+  } = useAppStore()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token')
@@ -16,7 +21,9 @@ const VerifyYourEmail = () => {
     } else if (!email) {
       navigate('/')
     } else {
-      // setMessage(`A verification link has been sent to ${email || ''}.`)
+      setVerifyEmailMessage(
+        `A verification link has been sent to ${email || ''}.`
+      )
     }
   }, [])
   const handleResend = async () => {
@@ -29,12 +36,10 @@ const VerifyYourEmail = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="rounded-lg p-6 text-center shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">{verifyEmailMessage}</h2>
+        <h2 className="mb-4 text-xl font-bold">Verify your Email</h2>
+        <p className="mb-4 text-lg">{verifyEmailMessage}</p>
         {!token && (
           <>
-            <p className="">
-              Check your inbox and verify your email to continue.
-            </p>
             <button
               onClick={handleResend}
               disabled={loading}

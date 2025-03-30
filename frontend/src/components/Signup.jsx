@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useAppStore } from '@/store'
 import Input from './Input'
+import { isEmailValid, isPasswordValid } from '@/utils/validatiors'
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -43,17 +44,7 @@ const SignUp = () => {
       toast.error('All Fields are required')
       return false
     }
-    const emailRegEx = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/ // Email validation regex
-
-    if (!emailRegEx.test(email)) {
-      toast.error('Invalid email address')
-      return false
-    }
-    // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-    // if (!passwordRegex.test(password)){
-    //     toast.error('Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character.')
-    //     return false
-    // }
+    if (!isEmailValid(email) || !isPasswordValid(password)) return false
     if (password !== confirmPassword) {
       toast.error("Passwords don't match")
       return false
