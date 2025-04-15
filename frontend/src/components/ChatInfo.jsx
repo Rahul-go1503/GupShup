@@ -1,11 +1,11 @@
 import { useAppStore } from '@/store'
-import { Phone, Video } from 'lucide-react'
+import { ArrowLeft, Phone, Video } from 'lucide-react'
 import React from 'react'
 import GroupChatDetailsModal from './Modals/GroupChatDetailsModal'
 import PrivateChatDetailsModal from './Modals/PrivateChatDetailsModal'
 
 const ChatInfo = () => {
-  const { selectedUserData } = useAppStore()
+  const { selectedUserData, setSelectedUserData } = useAppStore()
 
   const handleChatDetailsModal = () => {
     let modal = document.getElementById('privateChatDetailsModal')
@@ -18,6 +18,12 @@ const ChatInfo = () => {
     <>
       <div className="row-span-1 p-1 shadow-sm">
         <div className="m-auto flex items-center justify-between self-center">
+          <button
+            onClick={() => setSelectedUserData(undefined)}
+            className="p-2 text-sm text-neutral-500 md:hidden"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
           {/* User Info Section */}
           <div
             className="flex items-center space-x-4"

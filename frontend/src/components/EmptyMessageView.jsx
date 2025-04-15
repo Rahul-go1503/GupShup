@@ -1,6 +1,6 @@
 const EmptyMessageView = () => {
   return (
-    <div className="col-span-9 row-span-11 flex flex-col items-center justify-center rounded-lg shadow-md">
+    <div className="hidden w-screen flex-col items-center justify-center rounded-lg shadow-md md:flex md:w-3/4">
       <h1 className="mb-2 text-4xl font-extrabold">
         Welcome to <span className="text-primary">GupShup</span>
       </h1>

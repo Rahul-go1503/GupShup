@@ -7,7 +7,7 @@ const Header = () => {
   const { userInfo, logout } = useAppStore()
   return (
     <>
-      <div className="col-span-12 row-span-1 flex items-center justify-between border-b-2 border-b-neutral px-2">
+      <div className="flex h-[10%] items-center justify-between border-b-2 border-b-neutral bg-base-100 px-2">
         <div className="flex items-center justify-start gap-2 text-primary">
           <div className="rounded-full p-1 ring-1 ring-inset ring-primary">
             <AudioWaveform size={20} />

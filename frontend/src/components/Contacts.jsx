@@ -35,7 +35,9 @@ const Contacts = () => {
   return isUserLoading ? (
     <div className="col-span-3 row-span-11">'loading...'</div>
   ) : (
-    <div className="col-span-3 row-span-11 flex flex-col border-r-2 border-r-neutral px-2">
+    <div
+      className={`w-screen flex-col border-r-2 border-r-neutral bg-base-100 px-2 md:flex md:w-1/4 ${selectedUserData ? 'hidden' : 'flex'}`}
+    >
       <div className="flex items-center justify-between px-2">
         <p className="font-bold">Chats</p>
         <div className="flex items-center gap-1">
@@ -58,7 +60,6 @@ const Contacts = () => {
         icon={<Search size={20} />}
         type="text"
         placeholder="Search or start a new chat"
-        className="me-2 w-full rounded bg-transparent outline-none"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value)
