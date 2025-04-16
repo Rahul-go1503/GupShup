@@ -39,7 +39,7 @@ const ChatWindow = () => {
   }, [selectedChatMessages])
 
   return (
-    <div className="row-span-8 overflow-scroll">
+    <div className="h-[80%] overflow-scroll">
       {renderMessages()}
       {/* Ref at the end for scrolling */}
       <div ref={messageEndRef} />

@@ -1,4 +1,4 @@
-import { Search, SquarePen } from 'lucide-react'
+import { Search, SquarePen, UserRoundPlus } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import ContactCard from './ContactCard'
 import { ScrollArea } from './ui/scroll-area'
@@ -33,7 +33,7 @@ const Contacts = () => {
     })
   }, [users, query])
   return isUserLoading ? (
-    <div className="col-span-3 row-span-11">'loading...'</div>
+    <div className="w-screen md:w-1/4">'loading...'</div>
   ) : (
     <div
       className={`w-screen flex-col border-r-2 border-r-neutral bg-base-100 px-2 md:flex md:w-1/4 ${selectedUserData ? 'hidden' : 'flex'}`}
@@ -65,13 +65,25 @@ const Contacts = () => {
           setQuery(e.target.value)
         }}
       />
-      <div className="overflow-y-auto">
-        <ScrollArea className="">
-          {filteredContacts.map((contact, index) => (
-            <ContactCard key={index} user={contact} />
-          ))}
-        </ScrollArea>
-      </div>
+      {filteredContacts.length > 0 ? (
+        <div className="overflow-y-auto">
+          <ScrollArea className="">
+            {filteredContacts.map((contact, index) => (
+              <ContactCard key={index} user={contact} />
+            ))}
+          </ScrollArea>
+        </div>
+      ) : (
+        <div className="flex h-full w-full justify-center">
+          <p className="text-sm italic">
+            No chats yet. Click the
+            <span className="inline-flex items-center">
+              <UserRoundPlus size={16} className="m-1" />
+            </span>
+            icon to start a conversation!
+          </p>
+        </div>
+      )}
       <CreateGroup />
     </div>
   )

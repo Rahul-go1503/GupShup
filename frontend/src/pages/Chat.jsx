@@ -10,7 +10,9 @@ const Chat = () => {
   return (
     <div className="bg-background flex h-screen flex-col">
       <Header />
-      <div className="flex h-[90%]">
+      <div
+        className={`flex ${selectedUserData !== undefined ? 'h-full md:h-[90%]' : 'h-[90%]'}`}
+      >
         <Contacts />
         {selectedUserData !== undefined ? (
           <MessageView />

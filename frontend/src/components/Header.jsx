@@ -2,18 +2,16 @@ import { useAppStore } from '@/store'
 import { AudioWaveform } from 'lucide-react'
 import ThemeController from './ThemeController'
 import EditProfileSection from './EditProfile'
+import BrandLogo from './ui/BrandLogo'
 
 const Header = () => {
-  const { userInfo, logout } = useAppStore()
+  const { userInfo, logout, selectedUserData } = useAppStore()
   return (
     <>
-      <div className="flex h-[10%] items-center justify-between border-b-2 border-b-neutral bg-base-100 px-2">
-        <div className="flex items-center justify-start gap-2 text-primary">
-          <div className="rounded-full p-1 ring-1 ring-inset ring-primary">
-            <AudioWaveform size={20} />
-          </div>
-          <h1 className="text-2xl font-bold">GupShup</h1>
-        </div>
+      <div
+        className={`${selectedUserData ? 'hidden md:flex' : 'flex'} h-[10%] items-center justify-between border-b-2 border-b-neutral bg-base-100 px-2`}
+      >
+        <BrandLogo />
         <div className="my-2 flex items-center gap-2">
           <ThemeController />
           <div className="dropdown dropdown-left dropdown-bottom">
