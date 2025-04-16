@@ -11,7 +11,7 @@ const ConfirmModal = ({
 }) => {
   return (
     <dialog id={id} className="modal">
-      <div className="modal-box w-1/4">
+      <div className="modal-box md:w-1/4">
         <h3 className="text-lg font-bold">{Title}</h3>
         <p className="py-2">{description}</p>
         <div className="mt-4 flex justify-end gap-3">

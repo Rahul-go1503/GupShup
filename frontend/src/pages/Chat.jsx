@@ -8,10 +8,18 @@ import { useAppStore } from '@/store'
 const Chat = () => {
   const { selectedUserData } = useAppStore()
   return (
-    <div className="bg-background grid h-screen grid-cols-12 grid-rows-12">
+    <div className="bg-background flex h-screen flex-col">
       <Header />
-      <Contacts />
-      {selectedUserData !== undefined ? <MessageView /> : <EmptyMessageView />}
+      <div
+        className={`flex ${selectedUserData !== undefined ? 'h-full md:h-[90%]' : 'h-[90%]'}`}
+      >
+        <Contacts />
+        {selectedUserData !== undefined ? (
+          <MessageView />
+        ) : (
+          <EmptyMessageView />
+        )}
+      </div>
     </div>
   )
 }

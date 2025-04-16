@@ -54,7 +54,7 @@ const ChatInputBar = () => {
   )
 
   return (
-    <div className="row-span-1 flex items-center gap-2 px-2">
+    <div className="flex h-[10%] items-center gap-2 px-2">
       {/* Emoji Picker */}
       <div className="relative">
         <button

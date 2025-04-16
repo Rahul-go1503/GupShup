@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import Input from './Input'
 import { AudioWaveform, Eye, EyeClosed, KeyRound, Mail } from 'lucide-react'
 import { isEmailValid, isPasswordValid } from '@/utils/validatiors'
+import BrandLogo from './ui/BrandLogo'
 
 const Login = () => {
   const { login, authLoading } = useAppStore()
@@ -42,12 +43,7 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md rounded-lg bg-base-200/50 p-8 shadow-lg">
-        <div className="mb-3 flex items-center justify-start gap-2 border-b-2 border-neutral pb-3 text-primary">
-          <div className="rounded-full p-1 ring-1 ring-inset ring-primary">
-            <AudioWaveform size={20} />
-          </div>
-          <h1 className="text-2xl font-bold">GupShup</h1>
-        </div>
+        <BrandLogo className="mb-3 border-b-2 border-neutral pb-3" />
         <h2 className="mb-6 text-center text-lg font-bold">Welcome Back</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input

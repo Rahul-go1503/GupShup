@@ -54,7 +54,7 @@ const NewChat = () => {
     }
   }, [])
   return (
-    <div className="dropdown" ref={dropdownRef}>
+    <div className="dropdown max-sm:dropdown-end" ref={dropdownRef}>
       <div
         tabIndex={0}
         role="button"
@@ -67,7 +67,7 @@ const NewChat = () => {
       </div>
       <div
         tabIndex={0}
-        className="dropdown-content z-[1] w-72 rounded-box bg-base-300 p-4 shadow-2xl"
+        className="dropdown-content z-[1] w-64 rounded-box bg-base-300 p-4 shadow-2xl md:w-72"
       >
         <div>
           <p className="my-2 text-lg font-semibold">New Chat</p>
