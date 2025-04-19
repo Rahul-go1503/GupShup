@@ -93,11 +93,9 @@ export const createUserSlice = (set, get) => ({
         try {
             set({ isUpdatingProfile: true })
             await axiosInstance.delete(USER_PROFILE_ROUTE)
-            set({ isUpdatingProfile: false })
             toast.success('Profile Image deleted successfully!')
         }
         catch (err) {
-            // console.error(err)
             toast.error(err.response?.data.message)
         }
         finally {

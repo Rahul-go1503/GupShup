@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { Button } from '@/components/ui/button'
 import {
-  Pencil,
-  Trash2,
   Users,
   UserMinus,
   Crown,
@@ -17,32 +15,46 @@ import NewGroupContactCard from '../NewGroupContactCard'
 import UserChip from '../UserChip'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import ConfirmModal from '../ConfirmModal'
+import { addMember, removeMember, updateGroup } from '@/events/chatEvents'
+import ProfileEditor from '../ui/ProfileEditor'
+import Input from '../Input'
+import Avatar from '../ui/Avatar'
 
 const GroupChatDetailsModal = () => {
-  const { userInfo, selectedGroupData, users } = useAppStore()
+  const { userInfo, selectedUserData, users, uploadGroupProfileImage } =
+    useAppStore()
 
   /***** States*****/
   const [editMode, setEditMode] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const [chipCount, setChipCount] = useState(0)
 
-  const initialGroupData = {
-    name: selectedGroupData?.name || '',
-    description: selectedGroupData?.description || '',
-    profile: selectedGroupData?.profile || '',
-    members: selectedGroupData?.members || [],
+  const [isAdmin, setIsAdmin] = useState(false)
+  let initialGroupData = {
+    name: selectedUserData?.name || '',
+    description: selectedUserData?.description || '',
+    profile: selectedUserData?.profile || '',
+    members: selectedUserData?.members || [],
   }
-
   const [groupDetails, setGroupDetails] = useState(initialGroupData)
+  useEffect(() => {
+    // console.log('selectedUserData', selectedUserData)
+    initialGroupData = {
+      name: selectedUserData?.name || '',
+      description: selectedUserData?.description || '',
+      profile: selectedUserData?.profile || '',
+      members: selectedUserData?.members || [],
+    }
+    setGroupDetails(initialGroupData)
+    const admin = initialGroupData.members.some(
+      (member) => member.userId._id === userInfo._id && member.isAdmin
+    )
+    setIsAdmin(admin)
+  }, [selectedUserData])
 
   const nameRef = useRef(null)
   const fileInputRef = useRef(null)
   const groupChatDetailsModalRef = useRef(null)
   const isEdited = useRef(false)
-
-  const isAdmin = groupDetails.members.some(
-    (member) => member.userId._id === userInfo._id && member.isAdmin
-  )
 
   // console.log(isAdmin)
   // Handle clicking outside the modal
@@ -93,8 +105,7 @@ const GroupChatDetailsModal = () => {
         setGroupDetails({ ...groupDetails, profile: reader.result })
       }
       reader.readAsDataURL(file)
-      // uploadGroupImage(file)
-      isEdited.current = true
+      uploadGroupProfileImage(file, selectedUserData._id)
     }
   }
 
@@ -104,9 +115,15 @@ const GroupChatDetailsModal = () => {
   }
 
   // Toggle Member in Group
-  const removeMember = (memberId) => {
-    toast.info('Feature not implemented yet')
-    // isEdited.current = true
+  const removeMemberHandler = (memberId) => {
+    removeMember({ groupId: selectedUserData._id, memberId })
+  }
+
+  const addMemberHandler = (members) => {
+    const memberIds = members
+      .filter((member) => member.selected)
+      .map((member) => member.userId)
+    addMember({ groupId: selectedUserData._id, memberIds })
   }
 
   // Toggle Admin Role
@@ -145,7 +162,7 @@ const GroupChatDetailsModal = () => {
     })
 
     groupMemberIds.current = new Set(
-      selectedGroupData?.members.map((member) => member.userId._id)
+      selectedUserData?.members?.map((member) => member.userId._id)
     )
     // console.log(allUsers.current)
     setMembers(allUsers.current)
@@ -180,7 +197,7 @@ const GroupChatDetailsModal = () => {
   const resetState = () => {
     // to handle the animation flucution
     setTimeout(() => {
-      setGroupDetails(initialGroupData)
+      // setGroupDetails(initialGroupData)
       setQuery('')
       setEditMode(false)
       setMembers(allUsers.current)
@@ -191,16 +208,17 @@ const GroupChatDetailsModal = () => {
   }
 
   const handleDiscardChanges = () => {
-    // console.log('discard')
-    // isEdited.current = false
     closeModal()
     resetState()
   }
   // Save Changes
   const handleSave = () => {
     if (!isAdmin) return
-    // updateGroupInfo(groupDetails)
-    toast.success('Group updated successfully!')
+    updateGroup({
+      groupId: selectedUserData._id,
+      groupName: groupDetails.name,
+      description: groupDetails.description,
+    })
     document.getElementById('groupChatDetailsModal').close()
     setEditMode(false)
   }
@@ -211,106 +229,52 @@ const GroupChatDetailsModal = () => {
           <div className="relative overflow-hidden">
             <div className="flex flex-col">
               {/* Group Profile Picture */}
-              <div className="flex flex-col items-center">
-                <div
-                  className="relative rounded-full"
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                >
-                  <img
-                    src={
-                      groupDetails.profile ||
-                      'https://ui-avatars.com/api/?name=' +
-                        groupDetails.name.split(' ').join('+') +
-                        '&background=random&color=fff'
-                    }
-                    alt="Group Profile"
-                    className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"
-                  />
-                  {editMode && isHovered && (
-                    <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50">
-                      <div className="flex gap-2">
-                        <div onClick={() => fileInputRef.current.click()}>
-                          <Pencil size={20} className="text-white" />
-                        </div>
-                        <div onClick={handleRemoveProfile}>
-                          <Trash2 size={20} className="text-white" />
-                        </div>
-                      </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageUpload}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProfileEditor
+                editMode={editMode}
+                profile={groupDetails?.profile}
+                name={groupDetails?.name}
+                fileInputRef={fileInputRef}
+                handleImageUpload={handleImageUpload}
+                handleRemoveProfile={handleRemoveProfile}
+              />
 
               {/* Group Name & Description */}
               <div className="mt-4 space-y-3">
-                <div>
-                  {/* <label className="block text-gray-600">Group Name</label> */}
-                  <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-                    <div className="text-muted self-auto">
-                      <Users size={20} />
-                    </div>
-                    <input
-                      ref={nameRef}
-                      type="text"
-                      name="name"
-                      placeholder="Enter group name"
-                      className="me-2 w-full rounded bg-transparent outline-none"
-                      value={groupDetails.name}
-                      onChange={handleChange}
-                      disabled={!isAdmin || !editMode}
-                    />
-                  </div>
-                </div>
+                <Input
+                  icon={<Users size={20} />}
+                  refprop={nameRef}
+                  type="text"
+                  name="name"
+                  placeholder="Enter group name"
+                  value={groupDetails?.name}
+                  onChange={handleChange}
+                  disabled={!isAdmin || !editMode}
+                />
 
-                <div>
-                  {/* <label className="block text-gray-600">Description</label> */}
-                  <div className="row-span-1 mb-1 flex justify-start gap-2 rounded border-b-2 border-b-transparent p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-                    <div className="text-muted self-auto">
-                      <ChartNoAxesGantt size={20} />
-                    </div>
-                    <input
-                      type="text"
-                      name="description"
-                      placeholder="Enter group description"
-                      className="me-2 w-full rounded bg-transparent outline-none"
-                      value={groupDetails.description || 'No description'}
-                      onChange={handleChange}
-                      disabled={!isAdmin || !editMode}
-                    />
-                  </div>
-                </div>
+                <Input
+                  icon={<ChartNoAxesGantt size={20} />}
+                  type="text"
+                  name="description"
+                  placeholder="Enter group description"
+                  className="me-2 w-full rounded bg-transparent outline-none"
+                  value={groupDetails?.description || 'No description'}
+                  onChange={handleChange}
+                  disabled={!isAdmin || !editMode}
+                />
               </div>
-
               {/* Members List */}
               <div className="mt-4">
                 <h3 className="text-sm font-medium">Members</h3>
                 <ScrollArea className="h-64">
-                  {groupDetails.members.map((member) => (
+                  {groupDetails?.members.map((member) => (
                     <div
                       key={member.userId._id}
                       className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-base-200"
                     >
-                      <div className="avatar my-auto">
-                        <div className="h-10 w-10 rounded-full">
-                          <img
-                            src={
-                              member.userId.profile ||
-                              'https://ui-avatars.com/api/?name=' +
-                                member.userId.firstName.split(' ').join('+') +
-                                '&background=random&color=fff'
-                            }
-                            alt={member.userId.firstName}
-                          />
-                        </div>
-                      </div>
+                      <Avatar
+                        profile={member.userId.profile}
+                        name={member.userId.firstName}
+                      />
                       <span className="flex-grow">
                         {member.userId._id == userInfo._id
                           ? 'You'
@@ -325,7 +289,9 @@ const GroupChatDetailsModal = () => {
                             >
                               <button
                                 className="btn btn-outline btn-xs"
-                                onClick={() => removeMember(member.userId._id)}
+                                onClick={() =>
+                                  removeMemberHandler(member.userId._id)
+                                }
                               >
                                 <UserMinus className="h-4 w-4" />
                               </button>
@@ -367,10 +333,7 @@ const GroupChatDetailsModal = () => {
                       >
                         Delete Group
                       </Button>
-                      <Button
-                        onClick={handleSave}
-                        className="btn-disabled bg-base-300"
-                      >
+                      <Button onClick={handleSave} className="bg-base-300">
                         Save
                       </Button>
                       <Button
@@ -385,7 +348,7 @@ const GroupChatDetailsModal = () => {
                       onClick={handleEditButton}
                       className="text-primary-content"
                     >
-                      Edit Profile
+                      Edit Group
                     </Button>
                   )
                 ) : (
@@ -399,50 +362,44 @@ const GroupChatDetailsModal = () => {
               className={`absolute left-0 top-0 z-[10] flex h-full w-full flex-col bg-base-100 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'}`}
             >
               {/* Back Button */}
-              <div>
-                <div
-                  className="p-2"
-                  onClick={() => {
-                    setStep(0), setQuery('')
-                  }}
-                >
-                  <ArrowLeft size={20} />
-                </div>
+              <div
+                className="p-2"
+                onClick={() => {
+                  setStep(0), setQuery('')
+                }}
+              >
+                <ArrowLeft size={20} />
               </div>
               {/* Search contacts */}
-              <div className="mb-1 flex items-center justify-start gap-2 rounded border-b-2 border-b-transparent bg-base-200 p-2 transition-all duration-300 focus-within:border-b-accent focus-within:bg-base-200">
-                <div className="text-muted self-auto">
-                  <Search size={20} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search name"
-                  className="me-2 w-full rounded bg-transparent outline-none"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value)
-                  }}
-                />
-              </div>
+
+              <Input
+                icon={<Search size={20} />}
+                name="search"
+                type="text"
+                placeholder="Search name"
+                className="me-2 w-full rounded bg-transparent outline-none"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                }}
+              />
 
               {/* selected member list */}
-              <div>
-                <ScrollArea className="w-full">
-                  <div className="flex gap-1">
-                    {members.map(
-                      (member, index) =>
-                        member.selected && (
-                          <UserChip
-                            key={index}
-                            data={member.name}
-                            funHandleRemove={() => handleSelect(index)}
-                          />
-                        )
-                    )}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </div>
+              <ScrollArea className="w-full">
+                <div className="flex gap-1">
+                  {members.map(
+                    (member, index) =>
+                      member.selected && (
+                        <UserChip
+                          key={index}
+                          data={member.name}
+                          funHandleRemove={() => handleSelect(index)}
+                        />
+                      )
+                  )}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
 
               {/* Contact List */}
 
@@ -460,9 +417,7 @@ const GroupChatDetailsModal = () => {
 
               {/* OKay Button */}
               <Button
-                onClick={() => {
-                  setStep(0), toast.info('Feature not implemented yet')
-                }}
+                onClick={() => addMemberHandler(members)}
                 disabled={chipCount === 0}
                 className="absolute bottom-1 right-0 disabled:bg-base-200"
               >

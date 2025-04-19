@@ -3,6 +3,7 @@ import Message from "../../../models/Message.js";
 import User from "../../../models/User.js";
 import { generateFileURL, uploadToS3 } from "../../../utils/generateFileURL.js";
 import { strToObjId } from "../../../utils/strToObjId.js";
+import { getGroupDetailsHandler } from "../../groupController.js";
 
 
 export const handleChatEvents = (io, socket) => {
@@ -71,7 +72,7 @@ export const handleChatEvents = (io, socket) => {
     socket.on('newGroup', async (data, callback) => {
         try {
             const { groupProfileData, groupName, description, members } = data
-            if (!members || members.length < 2) throw new Error('minimum 3 members are required to form a group')
+            if (!members || members.length < 1) throw new Error('minimum 2 members are required to form a group')
             const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
 
             const groupMembers = []
@@ -81,13 +82,13 @@ export const handleChatEvents = (io, socket) => {
 
 
             for (const member of members) {
-                const userId = await User.findOne({ _id: strToObjId(member) }).select('_id')
-                if (!userId) {
+                const user = await User.findOne({ _id: strToObjId(member) }).select('_id')
+                if (!user) {
                     throw new Error('User not found')
                 }
-                groupMembers.push({ userId: userId._id })
+                groupMembers.push({ userId: user._id, addedBy: userId })
                 receiverIds.push({
-                    userId,
+                    user,
                     sendAt: currentTimestamp
                 })
             }
@@ -164,4 +165,148 @@ export const handleChatEvents = (io, socket) => {
             callback({ success: false, error: err.message || "An unknown error occurred" })
         }
     })
+
+    socket.on('removeMember', async (data, callback) => {
+        try {
+            const { groupId, memberId } = data
+            const group = await Contact.findOneAndUpdate(
+                {
+                    _id: strToObjId(groupId),
+                    'members.userId': strToObjId(memberId)
+                },
+                {
+                    $pull: {
+                        members: { userId: strToObjId(memberId) }
+                    }
+                },
+                { new: true }
+            )
+            if (!group) throw new Error('Group not found or member not in group')
+            const message = `${userName} removed a member from the group`
+            const newMessage = new Message({
+                senderId: userId,
+                contactId: group._id,
+                message,
+                isNotification: true,
+            })
+            await newMessage.save()
+            group.latestMessageId = newMessage._id
+            await group.save()
+
+            io.to(memberId).emit('removeGroup', { groupId })
+            const groupDetails = await getGroupDetailsHandler(groupId, userId)
+            const receiverRoom = userId.toString()
+            io.to(receiverRoom).emit('updateGroup', groupDetails)
+            for (const member of group.members) {
+                const receiverRoom = member.userId.toString()
+                const data = { senderId: newMessage.senderId, senderName: userName, message, messageType: newMessage.messageType, contactId: groupId, createdAt: newMessage.createdAt, isNotification: true }
+                io.to(receiverRoom).emit('receiveMessage', data)
+            }
+            callback({ success: true })
+        }
+        catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
+    socket.on('addMembers', async (data, callback) => {
+        try {
+            const { groupId, memberIds } = data
+
+            const members = memberIds.map((memberId) => {
+                return { userId: strToObjId(memberId), addedBy: strToObjId(userId) }
+            })
+            const currentTimestamp = Date.now(); // Pre-calculate timestamp to ensure consistency
+            const group = await Contact.findOneAndUpdate(
+                {
+                    _id: strToObjId(groupId)
+                },
+                {
+                    $addToSet: { members: { $each: members } }  // Avoids duplicates
+                },
+                { new: true }
+            )
+            const message = `${userName} added members in the group`
+            const newMessage = new Message({
+                senderId: userId,
+                contactId: group._id,
+                message,
+                isNotification: true,
+            })
+            await newMessage.save()
+            group.latestMessageId = newMessage._id
+            await group.save()
+            const resData = {
+                _id: group._id,
+                profile: await generateFileURL(group.profile),
+                isGroup: true,
+                name: group.name,
+                message: newMessage.message,
+                createdAt: currentTimestamp,
+                unReadMessageCount: 0,
+                isNotification: true
+            }
+            for (const memberId of memberIds) {
+                io.to(memberId).emit('newGroup', { group: resData })
+            }
+
+            const groupDetails = await getGroupDetailsHandler(groupId, userId)
+            const receiverRoom = userId.toString()
+            io.to(receiverRoom).emit('updateGroup', groupDetails)
+
+            for (const member of group.members) {
+                const receiverRoom = member.userId.toString()
+                const data = { senderId: newMessage.senderId, senderName: userName, message, messageType: newMessage.messageType, contactId: groupId, createdAt: newMessage.createdAt, isNotification: true }
+                io.to(receiverRoom).emit('receiveMessage', data)
+            }
+            callback({ success: true })
+        }
+        catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
+    socket.on('updateGroup', async (data, callback) => {
+        try {
+            const { groupId, groupName, description, profileKey } = data
+            const updateData = {};
+            if (groupName) updateData.name = groupName;
+            if (description) updateData.description = description;
+            if (profileKey) updateData.profile = profileKey;
+
+            const group = await Contact.findByIdAndUpdate(
+                strToObjId(groupId),
+                updateData,
+                { new: true }
+            );
+            if (!group) throw new Error('Group not found')
+            const message = `${userName} updated group details`
+            const newMessage = new Message({
+                senderId: userId,
+                contactId: group._id,
+                message,
+                isNotification: true,
+            })
+            await newMessage.save()
+            group.latestMessageId = newMessage._id
+            await group.save()
+            // const groupDetails = await getGroupDetailsHandler(groupId, userId)
+            const resData = { senderId: newMessage.senderId, senderName: userName, message, messageType: newMessage.messageType, contactId: groupId, createdAt: newMessage.createdAt, isNotification: true }
+            updateData._id = group._id
+            if (profileKey) updateData.profile = await generateFileURL(profileKey);
+            for (const member of group.members) {
+                const receiverRoom = member.userId.toString()
+                io.to(receiverRoom).emit('receiveMessage', resData)
+                io.to(receiverRoom).emit('updateGroup', updateData)
+            }
+            callback({ success: true })
+        }
+        catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
 }

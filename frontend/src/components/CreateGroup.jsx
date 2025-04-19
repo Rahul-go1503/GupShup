@@ -1,9 +1,9 @@
 import {
   Info,
-  MessageSquarePlus,
   Pencil,
   Search,
   Trash2,
+  UserRoundPlus,
   Users,
 } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -199,15 +199,27 @@ const CreateGroup = () => {
             )}
 
             {/* Contact List */}
-            <ScrollArea className="mt-2 h-64">
-              {filteredContacts.map((contact, index) => (
-                <NewGroupContactCard
-                  key={index}
-                  data={contact}
-                  funHandleSelect={() => handleSelect(contact.userId)}
-                />
-              ))}
-            </ScrollArea>
+            {filteredContacts.length > 0 ? (
+              <ScrollArea className="mt-2 h-64">
+                {filteredContacts.map((contact, index) => (
+                  <NewGroupContactCard
+                    key={index}
+                    data={contact}
+                    funHandleSelect={() => handleSelect(contact.userId)}
+                  />
+                ))}
+              </ScrollArea>
+            ) : (
+              // <div className="flex h-full w-full justify-center">
+              <p className="text-sm italic">
+                No contacts yet. Click the
+                <span className="inline-flex items-center">
+                  <UserRoundPlus size={16} className="m-1" />
+                </span>
+                icon to start a conversation!
+              </p>
+              // </div>
+            )}
             {/* second step */}
             <div
               className={`absolute left-0 top-0 z-[10] h-full w-full bg-base-100 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'} p-2`}

@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react'
 import ChatInfo from './ChatInfo'
 import ChatWindow from './ChatWindow'
 import ChatInputBar from './ChatInputBar'
 import { useAppStore } from '@/store'
 
 const MessageView = () => {
-  const { isChatsLoading, selectedUserData, getAllMessagesById } = useAppStore()
-  useEffect(() => {
-    if (selectedUserData._id) getAllMessagesById(selectedUserData._id)
-  }, [selectedUserData])
+  const { isChatsLoading } = useAppStore()
   return isChatsLoading ? (
     <p>loading....</p>
   ) : (

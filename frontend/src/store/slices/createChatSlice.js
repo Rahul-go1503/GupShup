@@ -1,8 +1,8 @@
 import { axiosInstance } from "@/config/axios"
-import { ALL_MESSAGES_BY_ID_ROUTE, GROUP_ROUTES, MESSAGE_ROUTES } from "@/utils/constants"
+import { ALL_MESSAGES_BY_ID_ROUTE, GROUP_PROFILE_ROUTE, GROUP_ROUTES, MESSAGE_ROUTES } from "@/utils/constants"
 import { toast } from "sonner"
 import { useAppStore } from ".."
-import { createNewChat, updateUnReadMessageCount } from "@/events/chatEvents"
+import { createNewChat, updateGroup, updateUnReadMessageCount } from "@/events/chatEvents"
 import { sendMessage } from "@/events/messageEvents"
 import axios from "axios"
 
@@ -10,9 +10,9 @@ export const initialState = {
     isChatsLoading: false,
     isFilesUploading: false,
     isGroupUpdating: false,
+    isUpdatingGroupProfile: false,
 
     selectedUserData: undefined,
-    selectedGroupData: undefined,
     selectedChatMessages: [],
 }
 
@@ -43,24 +43,31 @@ export const createChatSlice = (set, get) => ({
             selectedChatMessages: [],
         })
     },
-
-    getAllMessagesById: async (id) => {
+    contactClickHandler: async (user) => {
         try {
             set({ isChatsLoading: true })
-            if (get().selectedUserData.isGroup) {
-                const getGroupDetails = await axiosInstance.get(`${GROUP_ROUTES}/${id}`)
-                // console.log(getGroupDetails)
-                set({ selectedGroupData: getGroupDetails.data })
+
+            if (user.isGroup) {
+                const getGroupDetails = await axiosInstance.get(`${GROUP_ROUTES}/${user._id}`)
+
+                set({ selectedUserData: getGroupDetails.data })
             }
             else {
-                // console.log('private message')
-                set({ selectedGroupData: undefined })
+                set({ selectedUserData: user })
+            }
+            if (user?.unReadMessageCount) {
+                const data = {
+                    contactId: user?._id,
+                    count: -user?.unReadMessageCount,
+                }
+                updateUnReadMessageCount(data)
             }
             // console.log()
-            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { _id: id })
+            const res = await axiosInstance.post(ALL_MESSAGES_BY_ID_ROUTE, { _id: user._id })
             set({ selectedChatMessages: res.data.messages })
         }
         catch (err) {
+            console.error(err)
             toast.error(err.response?.data?.message)
         } finally {
             set({ isChatsLoading: false })
@@ -134,21 +141,32 @@ export const createChatSlice = (set, get) => ({
             set({ isFilesUploading: false })
         }
     },
-
-    updateGroup: async (data) => {
+    uploadGroupProfileImage: async (file, groupId) => {
         try {
-            set({ isUpdating: true });
-            const { data } = await axiosInstance.put(`/group/${groupId}`, updatedData);
-            set((state) => ({
-                groups: state.groups.map((group) => group._id === groupId ? data : group),
-                isUpdating: false,
-            }));
-        } catch (err) {
-            toast.error(err.response?.data?.message)
-        } finally {
-            set({ isUpdating: false })
+            set({ isUpdatingGroupProfile: true })
+            const data = {
+                fileName: file.name,
+                fileType: file.type
+            }
+            const res = await axiosInstance.put(`${GROUP_PROFILE_ROUTE}/${groupId}`, data)
+            await axios.put(res.data.url, file, {
+                headers: {
+                    "Content-Type": file.type,  // Ensure correct content type
+                }
+            })
+            updateGroup({ groupId, profileKey: res.data.fileKey })
+            // await get().updateUserInfo({ profileKey: res.data.fileKey })
+            // toast.success('Profile Image updated successfully!')
+        }
+        catch (err) {
+            // console.error(err)
+            toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ isUpdatingGroupProfile: false })
         }
     },
+
     reset: () => {
         set(initialState)
     }

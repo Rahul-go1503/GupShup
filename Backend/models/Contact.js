@@ -7,6 +7,9 @@ const contactSchema = new Schema({
     members: [{
         userId: { type: Schema.Types.ObjectId, ref: 'User' },
         isAdmin: { type: Boolean, default: false, },
+        addedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        joinedAt: { type: Date, default: Date.now },
+        isDeleted: { type: Boolean, default: false },
         unReadMessageCount: { type: Number, default: 0 },
     }],
     latestMessageId: { type: Schema.Types.ObjectId, ref: 'Message', default: null },

@@ -1,5 +1,6 @@
 import { useAppStore } from '@/store'
 import React from 'react'
+import Avatar from './ui/Avatar'
 
 const NewChatContactCard = ({ user }) => {
   const { setSelectedUserData, setSelectedChatMessages, users } = useAppStore()
@@ -16,19 +17,7 @@ const NewChatContactCard = ({ user }) => {
         className="flex h-16 items-center gap-2 rounded-sm p-2 hover:bg-base-200"
         onClick={() => newChatHandler()}
       >
-        <div className="avatar my-auto">
-          <div className="h-10 w-10 rounded-full">
-            <img
-              src={
-                user.profile ||
-                'https://ui-avatars.com/api/?name=' +
-                  user.name.split(' ').join('+') +
-                  '&background=random&color=fff'
-              }
-              alt={user.name}
-            />
-          </div>
-        </div>
+        <Avatar profile={user.profile} name={user.name} />
         {`${user.name}`}
       </div>
     </>

@@ -26,122 +26,48 @@ const createNewGroup = async (req, res, next) => {
             isGroup: true
         })
         await newGroup.save()
-        return res.status(201).json({ group: { ...newGroup, latestMessageAt: newGroup.createdAt } })
+        return res.status(201).json({ group: { ...newGroup, createdAt: newGroup.createdAt } })
     }
     catch (err) {
         next(err)
     }
 }
 
-const updateGroupDetails = async (req, res, next) => {
-    try {
-        const { groupId, groupName, description } = req.body
-        const group = await Group.findByIdAndUpdate({ _id: groupId }, { groupName, description }, { returnDocument: 'after' })
-        if (!group) {
-            return res.status(403).json({ message: "Something Went Wrong" })
-        }
-        return res.status(200).json({ group, message: "Details updated successfully" })
+export const getGroupDetailsHandler = async (groupId, userId) => {
+    //Todo: rename userId to user object after populate
+    const group = await Contact.findOne({ _id: groupId, "members.userId": userId }).populate({
+        path: "members.userId",
+        select: "firstName profile email", // Fetch required fields
+    }).select('-latestMessageId').lean()
+    if (!group) {
+        return new Error("Group doesn't exists or you are not a member of this group.")
+    }
+    // Generate pre-signed URL for group profile
+    group.profile = await generateFileURL(group.profile);
 
-    } catch (err) {
-        next(err)
-
-    }
-}
-
-const updateGroupAdmins = async (req, res, next) => {
-    try {
-        const { groupId, members } = req.body
-        const group = await Group.findByIdAndUpdate({ _id: groupId }, { members }, { returnDocument: 'after' })
-        if (!group) {
-            return res.status(403).json({ message: "Something Went Wrong" })
-        }
-        return res.status(200).json({ group, message: "Admins updated successfully" })
-    }
-    catch (err) {
-        next(err)
-    }
-}
-
-const addNewMember = async (req, res, next) => {
-    try {
-        const { groupId, userId } = req.body
-        const user = await User.findById(strToObjId(userId)).select('_id')
-        if (!user) {
-            return res.status(400).json({ message: 'User doesn\'t exists' })
-        }
-        const group = await Group.findByIdAndUpdate(strToObjId(groupId),
-            {
-                $push: {
-                    members: { userId }
-                }
-            },
-            { new: true })
-        res.status(200).json({ group, message: "member added successfully" })
-    }
-    catch (err) {
-        next(err)
-    }
-}
-
-const removeMember = async (req, res, next) => {
-    try {
-        const { groupId, userId } = req.body
-        const user = await User.findById(strToObjId(userId)).select('_id')
-        if (!user) {
-            return res.status(400).json({ message: 'User doesn\'t exists' })
-        }
-        const group = await Group.findByIdAndUpdate(strToObjId(groupId),
-            {
-                $pull: {
-                    members: { userId }
-                }
-            },
-            { new: true })
-        res.status(200).json({ group, message: "member removed successfully" })
-    }
-    catch (err) {
-        next(err)
-    }
-}
-
-const deleteGroup = async (req, res, next) => {
-    try {
-        const { id } = req.params
-        const group = await Group.findByIdAndDelete(strToObjId(id))
-        if (!group) {
-            return res.status(400).json({ message: "Group doesn't exits" })
-        }
-        res.status(200).json({ message: 'Group deleted successfully' })
-    }
-    catch (err) {
-        next(err)
-    }
+    // console.log(group.profile, group.members)
+    // Generate pre-signed URLs for members' profiles
+    group.members = await Promise.all(
+        group.members.map(async (member) => {
+            if (member.userId._id == userId) {
+                group.unreadMessageCount = member.unReadMessageCount
+            }
+            return {
+                ...member,
+                userId: {
+                    ...member.userId,
+                    profile: await generateFileURL(member.userId.profile),
+                },
+            }
+        }))
+    return group
 }
 
 const getGroupDetails = async (req, res, next) => {
     try {
         const { id } = req.params
         const userId = strToObjId(req.user.id)
-        const group = await Contact.findOne({ _id: strToObjId(id), "members.userId": userId }).populate({
-            path: "members.userId",
-            select: "firstName profile email", // Fetch required fields
-        }).select('-latestMessageId').lean()
-        if (!group) {
-            return res.status(403).json({ message: "Group doesn't exists or you are not a member of this group." })
-        }
-        // Generate pre-signed URL for group profile
-        group.profile = await generateFileURL(group.profile);
-
-        console.log(group.profile, group.members)
-        // Generate pre-signed URLs for members' profiles
-        group.members = await Promise.all(
-            group.members.map(async (member) => ({
-                ...member,
-                userId: {
-                    ...member.userId,
-                    profile: await generateFileURL(member.userId.profile),
-                },
-            })))
+        const group = await getGroupDetailsHandler(strToObjId(id), userId)
         return res.status(200).json(group)
     }
     catch (err) {
@@ -149,4 +75,4 @@ const getGroupDetails = async (req, res, next) => {
     }
 }
 
-export { createNewGroup, updateGroupDetails, updateGroupAdmins, deleteGroup, getGroupDetails, addNewMember, removeMember }
+export { createNewGroup, getGroupDetails }

@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '@/store' // Zustand store for managing userInfo state
 import { Button } from '@/components/ui/button'
-import { Mail, Pencil, Trash2, User } from 'lucide-react'
-import { toast } from 'sonner'
+import { Mail, User } from 'lucide-react'
 import Input from './Input'
+import ProfileEditor from './ui/ProfileEditor'
 
 const EditProfileSection = () => {
   const { userInfo, updateUserInfo, uploadProfileImage, removeProfileImage } =
     useAppStore() // Zustand store
   const [editMode, setEditMode] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
 
   const initialProfileData = {
     firstName: userInfo?.firstName || '',
@@ -43,14 +42,12 @@ const EditProfileSection = () => {
   }, [])
   // Handle input change
   const handleChange = (e) => {
-    // console.log(e.target)
     setProfileData({ ...profileData, [e.target.name]: e.target.value })
   }
 
   //Todo: check for firefox
   // Handle image upload
   const handleImageUpload = (e) => {
-    // console.log('picker opened')
     const file = e.target.files[0]
     if (file) {
       const reader = new FileReader()
@@ -58,10 +55,7 @@ const EditProfileSection = () => {
         setProfileData({ ...profileData, profile: reader.result })
       }
       reader.readAsDataURL(file)
-      // console.log(file)
       uploadProfileImage(file)
-      // setProfileData({ ...profileData, fileKey: key })
-      // upload
     }
   }
 
@@ -89,10 +83,8 @@ const EditProfileSection = () => {
         firstName: profileData.firstName,
         email: profileData.email,
       }
-      // console.log(data)
       updateUserInfo(data)
     }
-    // else console.log(false)
     document.getElementById('profile_modal').close()
     setEditMode(false)
   }
@@ -100,44 +92,14 @@ const EditProfileSection = () => {
     <dialog id="profile_modal" className="modal" ref={modalRef}>
       <div className="modal-box">
         {/* Profile Picture */}
-        <div className="flex flex-col items-center">
-          <div
-            className="relative rounded-full"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            <img
-              src={
-                profileData.profile ||
-                'https://ui-avatars.com/api/?name=' +
-                  profileData.firstName.split(' ').join('+') +
-                  '&background=random&color=fff'
-              }
-              alt="Profile"
-              className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"
-            />
-            {editMode && isHovered && (
-              <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50">
-                <div className="flex gap-2">
-                  <div onClick={() => fileInputRef.current.click()}>
-                    <Pencil size={20} className="text-white" />
-                  </div>
-                  <div onClick={handleRemoveProfile}>
-                    <Trash2 size={20} className="text-white" />
-                  </div>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  id="profilePic"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+        <ProfileEditor
+          editMode={editMode}
+          profile={profileData.profile}
+          name={profileData.firstName}
+          fileInputRef={fileInputRef}
+          handleImageUpload={handleImageUpload}
+          handleRemoveProfile={handleRemoveProfile}
+        />
 
         {/* Profile Details */}
         <div className="mt-4 space-y-3">

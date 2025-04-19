@@ -48,3 +48,36 @@ export const updateUnReadMessageCount = async (data) => {
         }
     })
 }
+
+export const removeMember = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('removeMember', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Member Removed')
+    })
+}
+
+export const addMember = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('addMembers', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Member Added')
+    })
+}
+
+export const updateGroup = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('updateGroup', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Group Updated')
+    })
+}

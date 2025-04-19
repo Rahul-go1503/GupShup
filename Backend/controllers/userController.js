@@ -10,7 +10,6 @@ export const updateUserInfo = async (req, res, next) => {
     try {
         const userId = strToObjId(req.user.id)
         const { firstName, email, profileKey } = req.body
-        console.log(req.body)
 
         await User.findByIdAndUpdate(userId, {
             firstName: firstName,
@@ -126,7 +125,7 @@ export const getAllContacts = async (req, res, next) => {
                 data.push({
                     _id: contact._id,
                     isGroup: contact.isGroup,
-                    name: contact.users.find(member => !member._id.equals(userId))?.firstName,
+                    name: contact.users.find(member => !member._id.equals(userId))?.firstName || 'Deleted User',
                     profile: await generateFileURL(contact.users.find(member => !member._id.equals(userId))?.profile),
                     message: contact.latestMessage[0]?.message,
                     senderId: contact.latestMessageSender[0]?._id,
@@ -278,14 +277,15 @@ export const searchContacts = async (req, res, next) => {
 
 export const uploadProfileImage = async (req, res, next) => {
     try {
-        const userId = req.user.id
+        let id = req.user.id
+        if (req.params.id) id = req.params.id
         const { fileName, fileType } = req.body; // Get file name and type from frontend
 
         if (!fileName || !fileType) {
             return res.status(400).json({ error: "Missing fileName or fileType" });
         }
 
-        const key = `uploads/profiles/${userId}`; // to ensure one profile image per user
+        const key = `uploads/profiles/${id}`; // to ensure one profile image per user
         const url = await generatePresignedUrl({ fileType, key })
 
         const fileUrl = await generateFileURL(key)
@@ -301,7 +301,6 @@ export const removeProfileImage = async (req, res, next) => {
     try {
         const userId = req.user.id
         const oldUser = await User.findByIdAndUpdate(userId, { profile: null })
-        console.log(oldUser, oldUser.profile)
         if (oldUser?.profile) await deleteFile(oldUser.profile, next)
         res.status(200).json({ message: 'File deleted successfully' });
     } catch (err) {

@@ -20,6 +20,7 @@ export const ALL_USER_ROUTE = `${USER_ROUTE}/all`
 export const SEARCH_ROUTE = `${USER_ROUTE}/search`
 export const USER_PROFILE_ROUTE = `${USER_ROUTE}/profile/`
 
+
 export const MESSAGE_ROUTES = '/api/messages'
 // Todo: should be get request with :id
 export const ALL_MESSAGES_BY_ID_ROUTE = `${MESSAGE_ROUTES}/all`
@@ -27,10 +28,6 @@ export const ALL_MESSAGES_BY_ID_ROUTE = `${MESSAGE_ROUTES}/all`
 export const GROUP_ROUTES = 'api/group'
 export const CREATE_NEW_GROUP = `${GROUP_ROUTES}/`
 export const GET_GROUP_DETAILS = `${GROUP_ROUTES}/`
-export const UPDATE_GROUP_DETAILS = `${GROUP_ROUTES}/details`
-export const UPDATE_GROUP_ADMINS = `${GROUP_ROUTES}/admins`
-export const DELETE_GROUP = `${GROUP_ROUTES}/`
-export const ADD_NEW_MEMBER = `${GROUP_ROUTES}/member/add`
-export const REMOVE_MEMBER = `${GROUP_ROUTES}/member/remove`
+export const GROUP_PROFILE_ROUTE = `${GROUP_ROUTES}/profile`
 
 export const GENERATE_PRESIGNED_URL_ROUTE = `/api/upload/generatePreSignedUrl`
