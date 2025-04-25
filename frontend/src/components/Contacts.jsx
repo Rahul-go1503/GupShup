@@ -5,7 +5,6 @@ import { ScrollArea } from './ui/scroll-area'
 import { useAppStore } from '@/store'
 import CreateGroup from './CreateGroup'
 import NewChat from './NewChat'
-import { updateUnReadMessageCount } from '@/events/chatEvents'
 import Input from './Input'
 
 const Contacts = () => {
@@ -14,22 +13,13 @@ const Contacts = () => {
   useEffect(() => {
     getAllContacts()
   }, [])
-  useEffect(() => {
-    if (selectedUserData?.unReadMessageCount) {
-      const data = {
-        contactId: selectedUserData?._id,
-        count: -selectedUserData?.unReadMessageCount,
-      }
-      updateUnReadMessageCount(data)
-    }
-  }, [selectedUserData])
 
   const [query, setQuery] = useState('')
 
   const filteredContacts = useMemo(() => {
     return users.filter((contact) => {
       // console.log(contact.name, query)
-      return contact.name.toLowerCase().includes(query?.toLowerCase() || '')
+      return contact.name?.toLowerCase().includes(query?.toLowerCase() || '')
     })
   }, [users, query])
   return isUserLoading ? (

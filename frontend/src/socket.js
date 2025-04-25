@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 import { useAppStore } from "./store";
 import { HOST } from "./utils/constants";
+import { toast } from "sonner";
 
 let socket = null;
 const connectSocket = () => {
@@ -44,7 +45,36 @@ const registerSocketEvents = () => {
     setSelectedUserData({ ...selectedUserData, _id: contactId })
   })
 
+  socket.on('removeGroup', (data) => {
+    const { users, setUsers, selectedUserData, setSelectedUserData } = useAppStore.getState();
+    // console.log(data)
+    const updatedUsers = users.filter((user) => user._id !== data.groupId);
+    toast.info('You were removed from one group')
+    if (selectedUserData?._id == data.groupId) {
+      setSelectedUserData(undefined)
+    }
+    setUsers(updatedUsers);
+  })
+  socket.on('updateGroup', (data) => {
+    const { users, selectedUserData, setSelectedUserData, setUsers } = useAppStore.getState();
+    const updatedUsers = users.map((user) => {
+      if (user._id === data._id) {
+        const updatedUser = { ...user, ...data }
+        return updatedUser;
+      }
+      return user;
+    });
+    // console.log(data, updatedUsers)
+    setUsers(updatedUsers)
+    if (selectedUserData?._id == data._id) {
+      setSelectedUserData({ ...selectedUserData, ...data })
+    }
+    // setUsers(updatedUsers);
+  })
 
+  socket.onAny((eventName, ...args) => {
+    console.log(eventName, args);
+  })
   socket.on("disconnect", () => cleanupSocketListeners());
   socket.on("connect_error", handleConnectionError);
 };

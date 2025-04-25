@@ -38,15 +38,38 @@ export const createUserSlice = (set, get) => ({
         }
     },
 
-    updateUserInfo: async (data) => {
+    updateUserInfo: async (profileData) => {
         try {
             set({ isUpdatingProfile: true })
-            const res = await axiosInstance.put(USER_ROUTE, data)
-            set((state) => {
-                return {
-                    userInfo: { ...state.userInfo, ...res.data.user }
+            const { userInfo, uploadProfileImage, removeProfileImage } = get()
+            if (profileData.file) {
+                profileData.profileKey = await uploadProfileImage(profileData.file)
+
+            } else if (
+                profileData.profile != userInfo.profile &&
+                profileData.profileKey == null
+            ) {
+                removeProfileImage()
+                profileData.profileKey = null
+            }
+
+            if (
+                profileData.firstName != userInfo.firstName ||
+                profileData.file ||
+                profileData.profileKey == null
+            ) {
+                const data = {
+                    firstName: profileData.firstName,
+                    profileKey: profileData.profileKey,
                 }
-            })
+                const res = await axiosInstance.put(USER_ROUTE, data)
+                set((state) => {
+                    return {
+                        userInfo: { ...state.userInfo, ...res.data.user }
+                    }
+                })
+            }
+            document.getElementById('profile_modal').close()
             toast.success('Profile updated successfully!')
         } catch (err) {
             // console.error(err)
@@ -74,11 +97,10 @@ export const createUserSlice = (set, get) => ({
             // upding profile key here
             set((state) => {
                 return {
-                    userInfo: { ...state.userInfo, profile: res.data.fileUrl, profileKey: res.data.fileKey }
+                    userInfo: { ...state.userInfo, profile: res.data.fileUrl }
                 }
             })
-            await get().updateUserInfo({ profileKey: res.data.fileKey })
-            // toast.success('Profile Image updated successfully!')
+            return res.data.fileKey
         }
         catch (err) {
             // console.error(err)
@@ -93,18 +115,19 @@ export const createUserSlice = (set, get) => ({
         try {
             set({ isUpdatingProfile: true })
             await axiosInstance.delete(USER_PROFILE_ROUTE)
-            set({ isUpdatingProfile: false })
-            toast.success('Profile Image deleted successfully!')
+            set((state) => {
+                return {
+                    userInfo: { ...state.userInfo, profile: null }
+                }
+            })
         }
         catch (err) {
-            // console.error(err)
             toast.error(err.response?.data.message)
         }
         finally {
             set({ isUpdatingProfile: false })
         }
     },
-
     reset: () => {
         set(initialState)
     }

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { addNewMember, createNewGroup, deleteGroup, getGroupDetails, removeMember, updateGroupAdmins, updateGroupDetails } from "../controllers/groupController.js";
 import validateJWT from "../middlewares/validateJWT.js";
+import { createNewGroup, getGroupDetails } from "../controllers/groupController.js";
+import { removeProfileImage, uploadProfileImage } from "../controllers/userController.js";
 
 const route = Router()
 
@@ -8,12 +9,7 @@ route.use(validateJWT)
 route.post('/', createNewGroup)
 route.get('/:id', getGroupDetails)
 
-route.patch('/details', updateGroupDetails)
-route.patch('/admins', updateGroupAdmins)
-
-route.delete('/:id', deleteGroup)
-
-route.post('/member/add', addNewMember)
-route.post('/member/remove', removeMember)
+route.put('/profile/:id', uploadProfileImage)
+route.delete('/profile/:id', removeProfileImage)
 
 export default route

@@ -1,11 +1,4 @@
-import {
-  Info,
-  MessageSquarePlus,
-  Pencil,
-  Search,
-  Trash2,
-  Users,
-} from 'lucide-react'
+import { Info, Search, UserRoundPlus, Users } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollArea, ScrollBar } from './ui/scroll-area'
 import NewGroupContactCard from './NewGroupContactCard'
@@ -13,18 +6,18 @@ import { useAppStore } from '@/store'
 import UserChip from './UserChip'
 import { Button } from './ui/button'
 import { createNewGroup } from '@/events/chatEvents'
-import { toast } from 'sonner'
 import ConfirmModal from './ConfirmModal'
 import Input from './Input'
+import ProfileEditor from './ui/ProfileEditor'
 
 const CreateGroup = () => {
   /***** States*****/
-  const [groupProfile, setGroupProfile] = useState()
-  const [groupProfileData, setGroupProfileData] = useState()
-  const [groupName, setGroupName] = useState('')
-  const [description, setDescription] = useState('')
+  const [groupDetails, setGroupDetails] = useState({
+    name: '',
+    description: '',
+    profile: null,
+  })
   const [query, setQuery] = useState('')
-  const [isHovered, setIsHovered] = useState(false)
 
   const [members, setMembers] = useState([])
   // const [chipCount, setChipCount] = useState(0)
@@ -34,7 +27,6 @@ const CreateGroup = () => {
   /***** Refs *****/
   const allUsers = useRef([])
   const modalRef = useRef(null)
-  const fileInputRef = useRef(null)
   const chipCount = useRef(0) // used to detect changes as well, useRef is used to prevent unnecessary event listener re-attaches
 
   /***** Effects *****/
@@ -94,24 +86,12 @@ const CreateGroup = () => {
       })
     )
   }
-
+  const handleChange = (e) => {
+    setGroupDetails({ ...groupDetails, [e.target.name]: e.target.value })
+    // isEdited.current = 1
+  }
   //Todo: check for firefox
   // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setGroupProfile(reader.result)
-        const fileBase64 = reader.result.split(',')[1] // Remove Base64 prefix
-        setGroupProfileData({
-          file: fileBase64,
-          fileType: file.type,
-        })
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const closeModal = () => {
     if (modalRef.current) {
@@ -122,25 +102,36 @@ const CreateGroup = () => {
   const resetState = () => {
     // to handle the animation flucution
     setTimeout(() => {
-      setGroupName('')
-      setDescription('')
+      setGroupDetails({
+        name: '',
+        description: '',
+        profile: null,
+      })
       setQuery('')
       setMembers(allUsers.current)
       // setChipCount(0)
       setStep(0)
-      setGroupProfile(null)
       chipCount.current = 0
     }, 10)
   }
   const handleSubmit = (e) => {
     e.preventDefault()
+    let groupProfileData
+    if (groupDetails?.profile) {
+      const fileBase64 = groupDetails.profile.split(',')[1] // Remove Base64 prefix
+      groupProfileData = {
+        file: fileBase64,
+        fileType: groupDetails.file.type,
+      }
+    }
+    const selectedMemberIds = members
+      .filter((member) => member.selected)
+      .map((member) => member.userId)
     createNewGroup({
       groupProfileData,
-      groupName,
-      description,
-      members: members
-        .filter((member) => member.selected)
-        .map((member) => member.userId),
+      groupName: groupDetails.name,
+      description: groupDetails.description,
+      members: selectedMemberIds,
     })
     closeModal()
     resetState()
@@ -162,7 +153,6 @@ const CreateGroup = () => {
               icon={<Search size={20} />}
               type="text"
               placeholder="Search name"
-              className="me-2 w-full rounded bg-transparent outline-none"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value)
@@ -199,55 +189,37 @@ const CreateGroup = () => {
             )}
 
             {/* Contact List */}
-            <ScrollArea className="mt-2 h-64">
-              {filteredContacts.map((contact, index) => (
-                <NewGroupContactCard
-                  key={index}
-                  data={contact}
-                  funHandleSelect={() => handleSelect(contact.userId)}
-                />
-              ))}
-            </ScrollArea>
+            {filteredContacts.length > 0 ? (
+              <ScrollArea className="mt-2 h-64">
+                {filteredContacts.map((contact, index) => (
+                  <NewGroupContactCard
+                    key={index}
+                    data={contact}
+                    funHandleSelect={() => handleSelect(contact.userId)}
+                  />
+                ))}
+              </ScrollArea>
+            ) : (
+              // <div className="flex h-full w-full justify-center">
+              <p className="text-sm italic">
+                No contacts yet. Click the
+                <span className="inline-flex items-center">
+                  <UserRoundPlus size={16} className="m-1" />
+                </span>
+                icon to start a conversation!
+              </p>
+              // </div>
+            )}
             {/* second step */}
             <div
               className={`absolute left-0 top-0 z-[10] h-full w-full bg-base-100 transition-all duration-300 ${step ? 'translate-x-0' : 'translate-x-full'} p-2`}
             >
               {/* Group Profile Picture */}
-              <div className="my-2 flex flex-col items-center">
-                <div
-                  className="relative rounded-full"
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                >
-                  <img
-                    src={
-                      groupProfile ||
-                      'https://ui-avatars.com/api/?name=Group&color=fff'
-                    }
-                    alt="Group Profile"
-                    className="h-24 w-24 rounded-full border-2 border-gray-300 object-cover"
-                  />
-                  {isHovered && (
-                    <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50">
-                      <div className="flex gap-2">
-                        <div onClick={() => fileInputRef.current.click()}>
-                          <Pencil size={20} className="text-white" />
-                        </div>
-                        {/* <div onClick={() => handleRemoveProfile()}>
-                        <Trash2 size={20} className="text-white" />
-                      </div> */}
-                      </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageUpload}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProfileEditor
+                name="Group"
+                data={groupDetails}
+                setData={setGroupDetails}
+              />
 
               {/* Group Name & Description */}
               <div className="flex flex-col gap-2">
@@ -256,21 +228,17 @@ const CreateGroup = () => {
                   icon={<Users size={20} />}
                   type="text"
                   placeholder="Group Name"
-                  className="me-2 w-full rounded bg-transparent outline-none"
-                  value={groupName}
-                  onChange={(e) => {
-                    setGroupName(e.target.value)
-                  }}
+                  name="name"
+                  value={groupDetails?.name}
+                  onChange={handleChange}
                 />
                 <Input
                   icon={<Info size={20} />}
                   type="text"
                   placeholder="Group description"
-                  className="me-2 w-full rounded bg-transparent outline-none"
-                  value={description}
-                  onChange={(e) => {
-                    setDescription(e.target.value)
-                  }}
+                  value={groupDetails?.description}
+                  name="description"
+                  onChange={handleChange}
                 />
                 <div className="mt-4 flex justify-center gap-2">
                   <Button

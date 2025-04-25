@@ -1,0 +1,39 @@
+# Ignore environment files (should be passed via Docker environment variables)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Ignore node modules (we install fresh inside Docker)
+node_modules
+
+# Ignore logs and debug files
+logs
+logs/*.txt
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Ignore build artifacts (if applicable)
+dist
+
+# Ignore editor-specific files
+.vscode/*
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore Git-related files
+.git
+.gitignore
+
+# Ignore Docker-related files (avoid copying itself)
+.dockerignore
+Dockerfile

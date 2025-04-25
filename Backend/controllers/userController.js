@@ -9,17 +9,15 @@ import { deleteFile, generateFileURL, generatePresignedUrl } from "../utils/gene
 export const updateUserInfo = async (req, res, next) => {
     try {
         const userId = strToObjId(req.user.id)
-        const { firstName, email, profileKey } = req.body
-        console.log(req.body)
+        const { firstName, profileKey } = req.body
 
         await User.findByIdAndUpdate(userId, {
             firstName: firstName,
-            email: email,
             profile: profileKey
         }, { new: true, runValidators: true })
         // console.log(user1)
         // profile key is already set in userinfo and no need of file key after saving to db
-        res.status(200).json({ user: { firstName, email }, message: 'Profile updated successfully' })
+        res.status(200).json({ user: { firstName }, message: 'Profile updated successfully' })
     }
     catch (err) {
         next(err)
@@ -106,40 +104,36 @@ export const getAllContacts = async (req, res, next) => {
 
         for (const contact of contacts) {
             // todo: replace _id to contact id
+            const res = {
+                _id: contact._id,
+                isGroup: contact.isGroup,
+                message: contact.latestMessage[0]?.message,
+                senderId: contact.latestMessageSender[0]?._id,
+                senderName: contact.latestMessageSender[0]?.firstName,
+                createdAt: contact.latestMessage[0]?.createdAt,
+                isNotification: contact.latestMessage[0]?.isNotification
+            }
             if (contact.isGroup) {
                 data.push({
-                    _id: contact._id,
-                    isGroup: contact.isGroup,
+                    ...res,
                     name: contact.name,
                     profile: await generateFileURL(contact.profile),
-                    message: contact.latestMessage[0]?.message,
-                    senderId: contact.latestMessageSender[0]?._id,
-                    senderName: contact.latestMessageSender[0]?.firstName,
-                    createdAt: contact.latestMessage[0]?.createdAt,
                     unReadMessageCount: contact.members[0].unReadMessageCount || 0,
                     isAdmin: contact.members[0].isAdmin,
-                    isNotification: contact.latestMessage[0]?.isNotification
                 })
             }
             else {
-                // console.log(contact.members.find(member => member.userId.equals(userId)))
+                const receiver = contact.users.find(member => !member._id.equals(userId))
                 data.push({
-                    _id: contact._id,
-                    isGroup: contact.isGroup,
-                    name: contact.users.find(member => !member._id.equals(userId))?.firstName,
-                    profile: await generateFileURL(contact.users.find(member => !member._id.equals(userId))?.profile),
-                    message: contact.latestMessage[0]?.message,
-                    senderId: contact.latestMessageSender[0]?._id,
-                    senderName: contact.latestMessageSender[0]?.firstName,
-                    createdAt: contact.latestMessage[0]?.createdAt,
-                    // status: userSocketMap.get(userId.toString()) ? 'Online' : 'Offline',
+                    ...res,
+                    name: receiver?.firstName || 'Deleted User',
+                    profile: await generateFileURL(receiver?.profile),
                     unReadMessageCount: contact.members.find(member => member.userId.equals(userId))?.unReadMessageCount || 0,
-                    userId: contact.users.find(member => !member._id.equals(userId))?._id
+                    userId: receiver?._id
                 })
             }
         }
 
-        // console.log('All contacts: ', data)
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         res.status(200).json(data)
     }
@@ -147,65 +141,6 @@ export const getAllContacts = async (req, res, next) => {
         next(err)
     }
 }
-
-//     try {
-//         const userId = strToObjId(req.user.id)
-//         const contacts = await Message.aggregate([
-//             {
-//                 $match: {
-//                     $or: [
-//                         { senderId: userId },
-//                         { receiverId: userId }
-//                     ]
-//                 }
-//             },
-//             {
-//                 $sort: { updatedAt: -1 }
-//             },
-//             {
-//                 $group: {
-//                     _id: {
-//                         $cond: {
-//                             if: { $eq: ['$senderId', userId] },
-//                             then: '$receiverId',
-//                             else: '$senderId'
-//                         }
-//                     },
-//                     lastMessageTime: { $first: '$updatedAt' }
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                     from: 'users',
-//                     localField: '_id',
-//                     foreignField: '_id',
-//                     as: 'contactInfo'
-//                 }
-//             },
-//             {
-//                 $unwind: '$contactInfo'
-//             },
-//             {
-//                 $project: {
-//                     _id: 1,
-//                     lastMessageTime: 1,
-//                     firstName: '$contactInfo.firstName',
-//                     lastName: '$contactInfo.lastName',
-//                     email: '$contactInfo.email',
-//                 }
-//             },
-//             {
-//                 $sort: { lastMessageTime: -1 }
-//             }
-
-//         ])
-//         res.status(200).json(contacts)
-//     }
-//     catch (err) {
-//         next(err)
-//     }
-// }
-
 // Get All Users
 export const getAllUsers = async (req, res, next) => {
     try {
@@ -278,14 +213,15 @@ export const searchContacts = async (req, res, next) => {
 
 export const uploadProfileImage = async (req, res, next) => {
     try {
-        const userId = req.user.id
+        let id = req.user.id
+        if (req.params.id) id = req.params.id
         const { fileName, fileType } = req.body; // Get file name and type from frontend
 
         if (!fileName || !fileType) {
             return res.status(400).json({ error: "Missing fileName or fileType" });
         }
 
-        const key = `uploads/profiles/${userId}`; // to ensure one profile image per user
+        const key = `uploads/profiles/${id}`; // to ensure one profile image per user
         const url = await generatePresignedUrl({ fileType, key })
 
         const fileUrl = await generateFileURL(key)
@@ -301,7 +237,6 @@ export const removeProfileImage = async (req, res, next) => {
     try {
         const userId = req.user.id
         const oldUser = await User.findByIdAndUpdate(userId, { profile: null })
-        console.log(oldUser, oldUser.profile)
         if (oldUser?.profile) await deleteFile(oldUser.profile, next)
         res.status(200).json({ message: 'File deleted successfully' });
     } catch (err) {

@@ -42,7 +42,7 @@ export const handleMessageEvents = (io, socket) => {
 
             for (const member of contact.members) {
                 const receiverRoom = member.userId.toString()
-                var data = { senderId: newMessage.senderId, senderName: newMessage.senderName, message, messageType: newMessage.messageType, contactId, createdAt: newMessage.createdAt }
+                var data = { senderId: newMessage.senderId, senderName: userName, message, messageType: newMessage.messageType, contactId, createdAt: newMessage.createdAt, isNotification: false }
                 if (fileUrl) data.fileUrl = fileUrl
                 io.to(receiverRoom).emit('receiveMessage', data)
             }

@@ -3,16 +3,13 @@ import { formatLastMessageTime } from '@/utils/formatDateTime'
 import React from 'react'
 
 const ContactCard = ({ user }) => {
-  const { selectedUserData, setSelectedUserData, userInfo } = useAppStore()
-
-  const contactClickHandler = () => {
-    setSelectedUserData(user)
-  }
+  const { selectedUserData, userInfo, contactClickHandler } = useAppStore()
 
   return (
+    // Todo: Fix this use flex instead of grid
     <div
       className={`grid w-full cursor-pointer grid-cols-12 items-center gap-2 rounded-lg p-2 py-2 transition-all ${selectedUserData?._id === user._id ? 'bg-primary/10' : 'hover:bg-primary/5'}`}
-      onClick={contactClickHandler}
+      onClick={() => contactClickHandler(user)}
     >
       {/* Avatar Section */}
       <div className="avatar col-span-2">

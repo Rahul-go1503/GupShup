@@ -7,13 +7,7 @@ import { generateFileURL, generatePresignedUrl } from "../utils/generateFileURL.
 // get All messages for a user
 const getAllMessagesById = async (req, res) => {
     try {
-        // const senderId = req.user.id
         const contactId = strToObjId(req.body._id)
-        // console.log('senderId: ', senderId, 'receiverId: ', receiverId)
-
-        // const messages = await Message.find({ contactId }).populate({ path: 'senderId', select: 'firstName' }).select('-receiverIds')
-
-        // console.log(messages)
         const messages = await Message.aggregate([
             { $match: { contactId } },
             {
