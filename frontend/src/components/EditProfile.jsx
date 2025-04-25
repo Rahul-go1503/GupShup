@@ -6,20 +6,12 @@ import Input from './Input'
 import ProfileEditor from './ui/ProfileEditor'
 
 const EditProfileSection = () => {
-  const { userInfo, updateUserInfo, uploadProfileImage, removeProfileImage } =
-    useAppStore() // Zustand store
-  const [editMode, setEditMode] = useState(false)
+  const { userInfo, updateUserInfo } = useAppStore() // Zustand store
 
-  const initialProfileData = {
-    firstName: userInfo?.firstName || '',
-    email: userInfo?.email || '',
-    bio: userInfo?.bio || '',
-    profile: userInfo?.profile || '',
-  }
-  const [profileData, setProfileData] = useState(initialProfileData)
+  const [editMode, setEditMode] = useState(false)
+  const [profileData, setProfileData] = useState(userInfo)
 
   const nameRef = useRef(null)
-  const fileInputRef = useRef(null)
   const modalRef = useRef(null)
 
   // handle click outside
@@ -31,7 +23,7 @@ const EditProfileSection = () => {
         // to handle the animation flucution
         setTimeout(() => {
           setEditMode(false)
-          setProfileData(initialProfileData)
+          setProfileData(userInfo)
         }, 1000)
       }
     }
@@ -45,28 +37,6 @@ const EditProfileSection = () => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value })
   }
 
-  //Todo: check for firefox
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProfileData({ ...profileData, profile: reader.result })
-      }
-      reader.readAsDataURL(file)
-      uploadProfileImage(file)
-    }
-  }
-
-  const handleRemoveProfile = () => {
-    setProfileData({
-      ...profileData,
-      profile: null,
-    })
-    removeProfileImage()
-  }
-
   const handleEditButton = () => {
     setEditMode(true)
     setTimeout(() => {
@@ -75,17 +45,7 @@ const EditProfileSection = () => {
   }
   // Save changes
   const handleSave = () => {
-    if (
-      profileData.firstName != userInfo.firstName ||
-      profileData.email != userInfo.email
-    ) {
-      const data = {
-        firstName: profileData.firstName,
-        email: profileData.email,
-      }
-      updateUserInfo(data)
-    }
-    document.getElementById('profile_modal').close()
+    updateUserInfo(profileData)
     setEditMode(false)
   }
   return (
@@ -94,11 +54,9 @@ const EditProfileSection = () => {
         {/* Profile Picture */}
         <ProfileEditor
           editMode={editMode}
-          profile={profileData.profile}
           name={profileData.firstName}
-          fileInputRef={fileInputRef}
-          handleImageUpload={handleImageUpload}
-          handleRemoveProfile={handleRemoveProfile}
+          data={profileData}
+          setData={setProfileData}
         />
 
         {/* Profile Details */}
@@ -116,17 +74,19 @@ const EditProfileSection = () => {
             disabled={!editMode}
           />
 
-          <Input
-            label="Email"
-            icon={<Mail size={20} />}
-            type="email"
-            placeholder="Enter email"
-            name="email"
-            className="me-2 w-full rounded bg-transparent outline-none"
-            value={profileData.email}
-            onChange={handleChange}
-            disabled={true}
-          />
+          {!editMode && (
+            <Input
+              label="Email"
+              icon={<Mail size={20} />}
+              type="email"
+              placeholder="Enter email"
+              name="email"
+              className="me-2 w-full rounded bg-transparent outline-none"
+              value={profileData.email}
+              onChange={handleChange}
+              disabled={true}
+            />
+          )}
         </div>
 
         {/* Action Buttons */}

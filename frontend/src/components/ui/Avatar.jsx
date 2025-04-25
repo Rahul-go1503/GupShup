@@ -1,7 +1,7 @@
-const Avatar = ({ profile, name }) => {
+const Avatar = ({ profile, name, size = 10 }) => {
   return (
     <div className="avatar my-auto">
-      <div className="h-10 w-10 rounded-full">
+      <div className={`h-${size} w-${size} rounded-full`}>
         <img
           src={
             profile ||

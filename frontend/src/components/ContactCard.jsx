@@ -1,27 +1,30 @@
 import { useAppStore } from '@/store'
 import { formatLastMessageTime } from '@/utils/formatDateTime'
 import React from 'react'
-import Avatar from './ui/Avatar'
 
 const ContactCard = ({ user }) => {
-  const {
-    selectedUserData,
-    setSelectedUserData,
-    userInfo,
-    contactClickHandler,
-  } = useAppStore()
-
-  // const contactClickHandler = () => {
-  //   setSelectedUserData(user)
-  // }
+  const { selectedUserData, userInfo, contactClickHandler } = useAppStore()
 
   return (
+    // Todo: Fix this use flex instead of grid
     <div
       className={`grid w-full cursor-pointer grid-cols-12 items-center gap-2 rounded-lg p-2 py-2 transition-all ${selectedUserData?._id === user._id ? 'bg-primary/10' : 'hover:bg-primary/5'}`}
       onClick={() => contactClickHandler(user)}
     >
       {/* Avatar Section */}
-      <Avatar profile={user.profile} name={user.name} />
+      <div className="avatar col-span-2">
+        <div className="h-12 w-12 rounded-full">
+          <img
+            src={
+              user.profile ||
+              'https://ui-avatars.com/api/?name=' +
+                user.name.split(' ').join('+') +
+                '&background=random&color=fff'
+            }
+            alt={user.name}
+          />
+        </div>
+      </div>
 
       {/* Contact Info Section */}
       <div className="col-span-7">

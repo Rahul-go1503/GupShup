@@ -81,3 +81,36 @@ export const updateGroup = async (data) => {
         else toast.success('Group Updated')
     })
 }
+
+export const deleteGroup = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('deleteGroup', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Group Deleted')
+    })
+}
+
+export const exitGroup = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('exitGroup', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('You have exited the group')
+    })
+}
+
+export const toggleGroupAdmin = async (data) => {
+    const { socket } = useAppStore.getState()
+    socket.emit('toggleGroupAdmin', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else toast.success('Group Admin Updated')
+    })
+}   

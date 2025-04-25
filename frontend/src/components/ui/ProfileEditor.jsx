@@ -1,16 +1,31 @@
 import { Pencil, Trash2 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-const ProfileEditor = ({
-  editMode,
-  profile,
-  name,
-  fileInputRef,
-  handleImageUpload,
-  handleRemoveProfile,
-}) => {
+const ProfileEditor = ({ editMode = true, name, data, setData }) => {
   const [isHovered, setIsHovered] = useState(false)
 
+  //Todo: check for firefox
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setData({ ...data, profile: reader.result, file })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveProfile = () => {
+    setData({
+      ...data,
+      profile: null,
+      file: undefined,
+    })
+  }
+
+  const fileInputRef = useRef(null)
   return (
     <div className="flex flex-col items-center">
       <div
@@ -20,7 +35,7 @@ const ProfileEditor = ({
       >
         <img
           src={
-            profile ||
+            data?.profile ||
             'https://ui-avatars.com/api/?name=' +
               name?.split(' ').join('+') +
               '&background=random&color=fff'

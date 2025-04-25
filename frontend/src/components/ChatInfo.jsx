@@ -1,9 +1,9 @@
 import { useAppStore } from '@/store'
 import { ArrowLeft, Phone, Video } from 'lucide-react'
-import React from 'react'
 import GroupChatDetailsModal from './Modals/GroupChatDetailsModal'
 import PrivateChatDetailsModal from './Modals/PrivateChatDetailsModal'
 import { toast } from 'sonner'
+import Avatar from './ui/Avatar'
 
 const ChatInfo = () => {
   const { selectedUserData, setSelectedUserData } = useAppStore()
@@ -31,19 +31,11 @@ const ChatInfo = () => {
               {/* <div className="dropdown dropdown-right"> */}
               <div tabIndex={0} className="cursor-pointer">
                 <div className="flex items-center space-x-2">
-                  <div className="avatar">
-                    <div className="h-12 w-12 rounded-full">
-                      <img
-                        src={
-                          selectedUserData?.profile ||
-                          'https://ui-avatars.com/api/?name=' +
-                            selectedUserData.name.split(' ').join('+') +
-                            '&background=random&color=fff'
-                        }
-                        alt="User Avatar"
-                      />
-                    </div>
-                  </div>
+                  <Avatar
+                    profile={selectedUserData?.profile}
+                    name={selectedUserData?.name}
+                    size={12}
+                  />
                   <div>
                     <p className="text-lg font-semibold">
                       {selectedUserData?.name || 'User Name'}
@@ -72,8 +64,11 @@ const ChatInfo = () => {
         </div>
         {/* <EditGroupSection /> */}
       </div>
-      <PrivateChatDetailsModal />
-      <GroupChatDetailsModal />
+      {selectedUserData?.isGroup ? (
+        <GroupChatDetailsModal />
+      ) : (
+        <PrivateChatDetailsModal />
+      )}
     </>
   )
 }

@@ -154,9 +154,7 @@ export const createChatSlice = (set, get) => ({
                     "Content-Type": file.type,  // Ensure correct content type
                 }
             })
-            updateGroup({ groupId, profileKey: res.data.fileKey })
-            // await get().updateUserInfo({ profileKey: res.data.fileKey })
-            // toast.success('Profile Image updated successfully!')
+            return res.data.fileKey
         }
         catch (err) {
             // console.error(err)
@@ -166,7 +164,46 @@ export const createChatSlice = (set, get) => ({
             set({ isUpdatingGroupProfile: false })
         }
     },
+    removeGroupProfileImage: async (groupId) => {
+        try {
+            set({ isUpdatingGroupProfile: true })
+            await axiosInstance.delete(`${GROUP_PROFILE_ROUTE}/${groupId}`)
+        }
+        catch (err) {
+            toast.error(err.response?.data.message)
+        }
+        finally {
+            set({ isUpdatingGroupProfile: false })
+        }
+    },
+    updateGroupDetails: async (groupDetails) => {
+        try {
+            const { selectedUserData, uploadGroupProfileImage, removeGroupProfileImage } = get()
+            if (!groupDetails.profile) {
+                await removeGroupProfileImage(selectedUserData._id)
+                groupDetails.profileKey = null
+            } else if (groupDetails.file) {
+                groupDetails.profileKey = await uploadGroupProfileImage(
+                    groupDetails.file,
+                    selectedUserData._id
+                )
+            }
+            updateGroup({
+                groupId: selectedUserData._id,
+                groupName: groupDetails.name,
+                description: groupDetails.description,
+                profileKey: groupDetails.profileKey,
+            })
+            document.getElementById('groupChatDetailsModal').close()
+        }
+        catch (err) {
+            console.error(err)
+            toast.error(err.response?.data.message)
+        }
+        finally {
 
+        }
+    },
     reset: () => {
         set(initialState)
     }

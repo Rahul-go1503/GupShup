@@ -35,12 +35,12 @@ const createNewGroup = async (req, res, next) => {
 
 export const getGroupDetailsHandler = async (groupId, userId) => {
     //Todo: rename userId to user object after populate
-    const group = await Contact.findOne({ _id: groupId, "members.userId": userId }).populate({
+    const group = await Contact.findOne({ _id: groupId }).populate({
         path: "members.userId",
         select: "firstName profile email", // Fetch required fields
     }).select('-latestMessageId').lean()
     if (!group) {
-        return new Error("Group doesn't exists or you are not a member of this group.")
+        return new Error("Group doesn't exists")
     }
     // Generate pre-signed URL for group profile
     group.profile = await generateFileURL(group.profile);
