@@ -368,4 +368,16 @@ export const handleChatEvents = (io, socket) => {
         }
     })
 
+    socket.on('checkUserOnline', async (data, callback) => {
+        try {
+            const { userId } = data
+            const isOnline = io.sockets.adapter.rooms.has(userId); // Get the room
+            callback({ success: true, isOnline })
+        }
+        catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
 }

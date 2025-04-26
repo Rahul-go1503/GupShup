@@ -4,6 +4,8 @@ import GroupChatDetailsModal from './Modals/GroupChatDetailsModal'
 import PrivateChatDetailsModal from './Modals/PrivateChatDetailsModal'
 import { toast } from 'sonner'
 import Avatar from './ui/Avatar'
+import { useEffect } from 'react'
+import OnlineStatus from './OnlineStatus'
 
 const ChatInfo = () => {
   const { selectedUserData, setSelectedUserData } = useAppStore()
@@ -43,6 +45,7 @@ const ChatInfo = () => {
                   </div>
                 </div>
               </div>
+              <OnlineStatus />
             </div>
           </div>
 

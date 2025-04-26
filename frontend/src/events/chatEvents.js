@@ -113,4 +113,19 @@ export const toggleGroupAdmin = async (data) => {
         }
         else toast.success('Group Admin Updated')
     })
-}   
+}
+
+export const checkUserOnline = () => {
+    const { selectedUserData, setSelectedUserData, socket } = useAppStore.getState()
+    const data = { userId: selectedUserData.userId }
+    socket.emit('checkUserOnline', data, (res) => {
+        console.log(res)
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else {
+            return setSelectedUserData({ ...selectedUserData, isOnline: res.isOnline })
+        }
+    })
+}
