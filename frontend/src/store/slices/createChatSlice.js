@@ -11,6 +11,7 @@ export const initialState = {
     isFilesUploading: false,
     isGroupUpdating: false,
     isUpdatingGroupProfile: false,
+    typingUsers: [],
 
     selectedUserData: undefined,
     selectedChatMessages: [],
@@ -36,7 +37,7 @@ export const createChatSlice = (set, get) => ({
 
     setSelectedUserData: (userData) => set({ selectedUserData: userData }),
     setSelectedChatMessages: (messages) => set({ selectedChatMessages: messages }),
-
+    setTypingUsers: (typingUsers) => set({ typingUsers }),
     closeChat: () => {
         set({
             selectedUserData: undefined,

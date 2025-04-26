@@ -1,6 +1,7 @@
 import { useAppStore } from '@/store'
 import { formatLastMessageTime } from '@/utils/formatDateTime'
 import React from 'react'
+import { TypingIndicator } from './TypingIndicator'
 
 const ContactCard = ({ user }) => {
   const { selectedUserData, userInfo, contactClickHandler } = useAppStore()
@@ -29,11 +30,15 @@ const ContactCard = ({ user }) => {
       {/* Contact Info Section */}
       <div className="col-span-7">
         <p className="truncate font-medium">{user.name}</p>
-        <p className="truncate text-sm">
-          {(!user.isNotification
-            ? (user.senderId == userInfo._id ? 'You' : user.senderName) + ': '
-            : '') + user.message || 'No messages yet'}
-        </p>
+        {user?.typing ? (
+          <TypingIndicator />
+        ) : (
+          <p className="truncate text-sm">
+            {(!user.isNotification
+              ? (user.senderId == userInfo._id ? 'You' : user.senderName) + ': '
+              : '') + user.message || 'No messages yet'}
+          </p>
+        )}
       </div>
 
       {/* Status and Time Section */}

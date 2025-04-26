@@ -4,11 +4,11 @@ import GroupChatDetailsModal from './Modals/GroupChatDetailsModal'
 import PrivateChatDetailsModal from './Modals/PrivateChatDetailsModal'
 import { toast } from 'sonner'
 import Avatar from './ui/Avatar'
-import { useEffect } from 'react'
 import OnlineStatus from './OnlineStatus'
+import { TypingIndicator } from './TypingIndicator'
 
 const ChatInfo = () => {
-  const { selectedUserData, setSelectedUserData } = useAppStore()
+  const { selectedUserData, setSelectedUserData, typingUsers } = useAppStore()
 
   const handleChatDetailsModal = () => {
     let modal = document.getElementById('privateChatDetailsModal')
@@ -38,14 +38,18 @@ const ChatInfo = () => {
                     name={selectedUserData?.name}
                     size={12}
                   />
-                  <div>
+                  <div className="flex flex-col">
                     <p className="text-lg font-semibold">
                       {selectedUserData?.name || 'User Name'}
                     </p>
+                    {typingUsers.length !== 0 ? (
+                      <TypingIndicator />
+                    ) : (
+                      <OnlineStatus />
+                    )}
                   </div>
                 </div>
               </div>
-              <OnlineStatus />
             </div>
           </div>
 

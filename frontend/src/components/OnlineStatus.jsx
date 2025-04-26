@@ -21,7 +21,7 @@ const OnlineStatus = () => {
 
   return (
     <div className="text-sm text-gray-500">
-      {selectedUserData?.isOnline ? 'Online' : 'Offline'}
+      {selectedUserData?.isOnline && 'Online'}
     </div>
   )
 }

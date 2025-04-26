@@ -11,7 +11,7 @@ const connectSocket = () => {
 
   socket = io(HOST, {
     autoConnect: false,
-    auth: userInfo,
+    auth: { _id: userInfo._id, firstName: userInfo.firstName },
     withCredentials: true,
   });
 
@@ -75,6 +75,46 @@ const registerSocketEvents = () => {
   })
 
 
+  socket.on('typing', (data) => {
+    const { selectedUserData, setTypingUsers, typingUsers } = useAppStore.getState();
+    if (selectedUserData?._id == data.id) {
+      let newTypingUsers = typingUsers
+      if (!typingUsers.includes(data.senderName)) {
+        newTypingUsers = [...typingUsers, data.senderName]
+      }
+      setTypingUsers(newTypingUsers);
+    }
+    else {
+      const { users, setUsers } = useAppStore.getState();
+      const updatedUsers = users.map((user) => {
+        if (user._id === data.id) {
+          const updatedUser = { ...user, typing: true }
+          return updatedUser;
+        }
+        return user;
+      });
+      setUsers(updatedUsers)
+    }
+  })
+
+  socket.on('stopTyping', (data) => {
+    const { selectedUserData, typingUsers, setTypingUsers } = useAppStore.getState();
+    if (selectedUserData?._id == data.id) {
+      const newTypingUsers = typingUsers.filter((user) => user != data.senderName)
+      setTypingUsers(newTypingUsers);
+    }
+    else {
+      const { users, setUsers } = useAppStore.getState();
+      const updatedUsers = users.map((user) => {
+        if (user._id === data.id) {
+          const updatedUser = { ...user, typing: false }
+          return updatedUser;
+        }
+        return user;
+      });
+      setUsers(updatedUsers)
+    }
+  })
   socket.onAny((eventName, ...args) => {
     console.log(eventName, args);
   })
