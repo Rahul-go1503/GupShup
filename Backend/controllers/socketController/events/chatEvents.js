@@ -368,4 +368,52 @@ export const handleChatEvents = (io, socket) => {
         }
     })
 
+    socket.on('checkUserOnline', async (data, callback) => {
+        try {
+            const { userId } = data
+            const isOnline = io.sockets.adapter.rooms.has(userId); // Get the room
+            callback({ success: true, isOnline })
+        }
+        catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
+    socket.on('typing', async (data, callback) => {
+        try {
+            const { id } = data
+            const chat = await Contact.findById(strToObjId(id))
+            if (!chat) throw new Error('Chat not found')
+            const res = { id, senderName: userName }
+            for (const member of chat.members) {
+                const receiverRoom = member.userId.toString()
+                if (receiverRoom !== userId) {
+                    socket.to(receiverRoom).emit('typing', res)
+                }
+            }
+            callback({ success: true })
+        } catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+    socket.on('stopTyping', async (data, callback) => {
+        try {
+            const { id } = data
+            const chat = await Contact.findById(strToObjId(id))
+            if (!chat) throw new Error('Chat not found')
+            for (const member of chat.members) {
+                const receiverRoom = member.userId.toString()
+                if (receiverRoom !== userId) {
+                    socket.to(receiverRoom).emit('stopTyping', { id, senderName: userName })
+                }
+            }
+            callback({ success: true })
+        } catch (err) {
+            console.log(err)
+            callback({ success: false, error: err.message || "An unknown error occurred" })
+        }
+    })
+
 }

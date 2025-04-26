@@ -11,7 +11,7 @@ const connectSocket = () => {
 
   socket = io(HOST, {
     autoConnect: false,
-    auth: userInfo,
+    auth: { _id: userInfo._id, firstName: userInfo.firstName },
     withCredentials: true,
   });
 
@@ -46,10 +46,12 @@ const registerSocketEvents = () => {
   })
 
   socket.on('removeGroup', (data) => {
-    const { users, setUsers, selectedUserData, setSelectedUserData } = useAppStore.getState();
+    const { users, setUsers, selectedUserData, setSelectedUserData, userInfo } = useAppStore.getState();
     // console.log(data)
     const updatedUsers = users.filter((user) => user._id !== data.groupId);
-    toast.info('You were removed from one group')
+    if (data.deletedBy != userInfo._id) {
+      toast.info(`You were removed from ${data.groupName} group`)
+    }
     if (selectedUserData?._id == data.groupId) {
       setSelectedUserData(undefined)
     }
@@ -72,6 +74,47 @@ const registerSocketEvents = () => {
     // setUsers(updatedUsers);
   })
 
+
+  socket.on('typing', (data) => {
+    const { selectedUserData, setTypingUsers, typingUsers } = useAppStore.getState();
+    if (selectedUserData?._id == data.id) {
+      let newTypingUsers = typingUsers
+      if (!typingUsers.includes(data.senderName)) {
+        newTypingUsers = [...typingUsers, data.senderName]
+      }
+      setTypingUsers(newTypingUsers);
+    }
+    else {
+      const { users, setUsers } = useAppStore.getState();
+      const updatedUsers = users.map((user) => {
+        if (user._id === data.id) {
+          const updatedUser = { ...user, typing: true }
+          return updatedUser;
+        }
+        return user;
+      });
+      setUsers(updatedUsers)
+    }
+  })
+
+  socket.on('stopTyping', (data) => {
+    const { selectedUserData, typingUsers, setTypingUsers } = useAppStore.getState();
+    if (selectedUserData?._id == data.id) {
+      const newTypingUsers = typingUsers.filter((user) => user != data.senderName)
+      setTypingUsers(newTypingUsers);
+    }
+    else {
+      const { users, setUsers } = useAppStore.getState();
+      const updatedUsers = users.map((user) => {
+        if (user._id === data.id) {
+          const updatedUser = { ...user, typing: false }
+          return updatedUser;
+        }
+        return user;
+      });
+      setUsers(updatedUsers)
+    }
+  })
   socket.onAny((eventName, ...args) => {
     console.log(eventName, args);
   })
@@ -81,11 +124,7 @@ const registerSocketEvents = () => {
 
 const cleanupSocketListeners = () => {
   if (!socket) return;
-
-  socket.off("receiveMessage");
-  socket.off("newChat");
-  socket.off("newGroup");
-  socket.off("updateContactId");
+  socket.removeAllListeners();
 };
 
 const handleConnectionError = (error) => {

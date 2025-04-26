@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import { strToObjId } from "../utils/strToObjId.js";
 import Contact from "../models/Contact.js";
-import { userSocketMap } from "../config/socket.js";
 import { deleteFile, generateFileURL, generatePresignedUrl } from "../utils/generateFileURL.js";
 
 
@@ -196,7 +195,6 @@ export const searchContacts = async (req, res, next) => {
             name: user.firstName,
             isGroup: false,
             userId: user._id,
-            status: userSocketMap.get(user._id.toString()) ? 'Online' : 'Offline',
             profile: await generateFileURL(user.profile) // Generating the signed URL
         })));
 

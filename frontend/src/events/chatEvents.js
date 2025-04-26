@@ -113,4 +113,38 @@ export const toggleGroupAdmin = async (data) => {
         }
         else toast.success('Group Admin Updated')
     })
-}   
+}
+
+export const checkUserOnline = () => {
+    const { selectedUserData, setSelectedUserData, socket } = useAppStore.getState()
+    const data = { userId: selectedUserData.userId }
+    socket.emit('checkUserOnline', data, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+        else {
+            return setSelectedUserData({ ...selectedUserData, isOnline: res.isOnline })
+        }
+    })
+}
+
+export const typing = () => {
+    const { socket, selectedUserData } = useAppStore.getState()
+    socket.emit('typing', { id: selectedUserData._id }, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+    })
+}
+
+export const stopTyping = () => {
+    const { socket, selectedUserData } = useAppStore.getState()
+    socket.emit('stopTyping', { id: selectedUserData._id }, (res) => {
+        if (res.success == false) {
+            console.log(res)
+            toast.error(res.error)
+        }
+    })
+}

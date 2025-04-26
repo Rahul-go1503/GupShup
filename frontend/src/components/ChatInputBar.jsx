@@ -4,8 +4,9 @@ import EmojiPicker from 'emoji-picker-react'
 import { Paperclip, SendHorizontal, Smile } from 'lucide-react'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import FilePicker from './FilePicker'
-import { createNewChat } from '@/events/chatEvents'
+import { createNewChat, stopTyping, typing } from '@/events/chatEvents'
 
+let typingTimeout
 const ChatInputBar = () => {
   const [message, setMessage] = useState('')
   const { selectedUserData } = useAppStore()
@@ -41,6 +42,7 @@ const ChatInputBar = () => {
       createNewChat({ message, id: userId })
     }
     setMessage('')
+    stopTyping()
   }, [message, selectedUserData])
 
   const handleKeyDown = useCallback(
@@ -52,7 +54,21 @@ const ChatInputBar = () => {
     },
     [sendHandler]
   )
+  const typingRef = useRef(false)
 
+  const handleTyping = (e) => {
+    setMessage(e.target.value)
+    if (!typingRef.current) {
+      typingRef.current = true
+      typing()
+    }
+
+    clearTimeout(typingTimeout)
+    typingTimeout = setTimeout(() => {
+      typingRef.current = false
+      stopTyping()
+    }, 3000)
+  }
   return (
     <div className="flex h-[10%] items-center gap-2 px-2">
       {/* Emoji Picker */}
@@ -96,7 +112,7 @@ const ChatInputBar = () => {
       <textarea
         ref={inputRef}
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={handleTyping}
         placeholder="Type a message..."
         className="w-full resize-none bg-transparent outline-none"
         onKeyDown={handleKeyDown}
