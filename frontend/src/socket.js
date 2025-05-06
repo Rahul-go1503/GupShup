@@ -115,9 +115,9 @@ const registerSocketEvents = () => {
       setUsers(updatedUsers)
     }
   })
-  socket.onAny((eventName, ...args) => {
-    console.log(eventName, args);
-  })
+  // socket.onAny((eventName, ...args) => {
+  //   console.log(eventName, args);
+  // })
   socket.on("disconnect", () => cleanupSocketListeners());
   socket.on("connect_error", handleConnectionError);
 };
