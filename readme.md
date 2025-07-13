@@ -86,12 +86,15 @@ npm install
 npm run dev
 ```
 
-## 📸 Screenshots / Demo
+## 📸 Screenshots
 
-![](./assets/signup.png "Signup Screen Theme: Synthwave")
-![](./assets/chat.png "Group Chat Screen Theme: Wireframe")
-![](./assets/GroupSettings.png "Group Settings Screen Theme: Forest")
-![](./assets/OnlineTyping.png "Online & Typing Theme: Cupcake & sunset")
+![Signup Screen Theme: Synthwave](./Assets/SignUp.png "Signup Screen Theme: Synthwave")
+
+![Group Chat Screen Theme: Wireframe](./Assets/Chat.png "Group Chat Screen Theme: Wireframe")
+
+![Group Settings Screen Theme: Forest](./Assets/GroupSettings.png "Group Settings Screen Theme: Forest")
+
+![Online & Typing Theme: Cupcake & sunset](./Assets/OnlineTyping.png "Online & Typing Theme: Cupcake & sunset")
 
 ## 🙌 Contributing
 
