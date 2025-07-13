@@ -5,6 +5,13 @@
 
 ---
 
+![Node.js](https://img.shields.io/badge/Frontend-React.js-green?logo=react)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=node.js)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen?logo=mongodb)
+![AWS S3](https://img.shields.io/badge/File%20Upload-AWS%20S3-orange)
+![Vercel](https://img.shields.io/badge/Hosted%20on-Vercel-000?logo=vercel&logoColor=white)
+![Made with ❤️](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red)
+
 ## ✨ Features That Slap
 
 - 🔐 **JWT Auth** – Sign up / Log in securely with email verification & token-based auth
@@ -80,6 +87,11 @@ npm run dev
 ```
 
 ## 📸 Screenshots / Demo
+
+![](./assets/signup.png "Signup Screen Theme: Synthwave")
+![](./assets/chat.png "Group Chat Screen Theme: Wireframe")
+![](./assets/GroupSettings.png "Group Settings Screen Theme: Forest")
+![](./assets/OnlineTyping.png "Online & Typing Theme: Cupcake & sunset")
 
 ## 🙌 Contributing
 
